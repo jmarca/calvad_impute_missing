@@ -12,27 +12,18 @@ var _ = require('underscore');
 var R;
 
 
-/**
- * refactor items
- *
- * 1. get files here
- * 2. send just a single file to R for processing
- * 3. which means make sure that each file that is sent to R really
- *    needs processing
- *
- */
 
 var  increment = function(keys){
     var years = [2007,2008,2009,2010,2011];
-    var districts = ['/data/pems/breakup/D04'
-                     ,'/data/pems/breakup/D07'
-                     ,'/data/pems/breakup/D12'
-                     ,'/data/pems/breakup/D05'
-                     ,'/data/pems/breakup/D06'
+    var districts = [//'/data/pems/breakup/D04'
+                     //,'/data/pems/breakup/D07'
+                     //,'/data/pems/breakup/D12'
+                     //,'/data/pems/breakup/D05'
+                     //,'/data/pems/breakup/D06'
                      ,'/data/pems/breakup/D08'
-                     ,'/data/pems/breakup/D03'
-                     ,'/data/pems/breakup/D11'
-                     ,'/data/pems/breakup/D10'
+                     //,'/data/pems/breakup/D03'
+                     //,'/data/pems/breakup/D11'
+                     //,'/data/pems/breakup/D10'
     ]
     var yidx = []
     var didx = []
@@ -70,9 +61,8 @@ var  increment = function(keys){
 }([1,2]);
 
 
-var RCall = {1:['--no-restore','--no-save','vds_self_impute_missing_distributed.R']
-             //,2:['--no-restore','--no-save','vds_imputation_prepwork.R']
-             ,2:['--no-restore','--no-save','vds_self_impute_missing_distributed.R']
+var RCall = {1:['--no-restore','--no-save','vds_plots.R']
+             ,2:['--no-restore','--no-save','vds_plots.R']
             };
 
 function loop(f){

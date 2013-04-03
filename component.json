@@ -1,13 +1,13 @@
 {
-  "name": "safetyInR",
-  "repo": "jmarca/safetyInR",
-  "description": "mondo package of R code for safety project",
+  "name": "bdp",
+  "repo": "jmarca/bdp",
+  "description": "mondo package of R code for CalVAD project",
   "version": "0.0.1",
-  "keywords": ["safety", "R", "rstats"],
+  "keywords": ["calvad", "R", "rstats"],
   "dependencies": {
     "jmarca/rstats_couch_utils":"*"
+    "jmarca/rstats_remote_files":"*"
   },
-  "main":"couchUtils.R",
-  "scripts": ["couchUtils.R"],
+  "main":"index.js",
   "license": "GPLV2"
 }
