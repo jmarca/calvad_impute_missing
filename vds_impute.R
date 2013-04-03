@@ -19,6 +19,15 @@ source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
 source('components/jmarca-calvad_rscripts/lib/vds_impute.R')
 
 library('RPostgreSQL')
+m <- dbDriver("PostgreSQL")
+## requires environment variables be set externally
+psqlenv = Sys.getenv(c("PSQL_HOST", "PSQL_USER", "PSQL_PASS"))
+
+con <-  dbConnect(m
+                  ,user=psqlenv[2]
+                  ,password=psqlenv[3]
+                  ,host=psqlenv[1]
+                  ,dbname="spatialvds")
 
 
 district = Sys.getenv(c('RDISTRICT'))[1]
