@@ -9,6 +9,7 @@
   "dependencies": {
     "superagent": "",
     "async": "",
+    "glob": "",
     "lodash": "",
     "suss_detector_id" : "git://github.com/jmarca/suss_detector_id.git",
     "couch_check_state": "git://github.com/jmarca/couch_check_state.git"
