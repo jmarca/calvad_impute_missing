@@ -107,8 +107,9 @@ _.each(years,function(year){
 async.forEach(years_districts,function(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)
-    get_files.get_yearly_vdsfiles({district:opt.env['RDISTRICT']
-                                  ,year:opt.env['RYEAR']}
+    get_files.get_yearly_vdsfiles({'district':opt.env['RDISTRICT']
+                                  ,'year':opt.env['RYEAR']
+                                  ,'rdata':1}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
                                       async.forEach(list
