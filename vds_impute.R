@@ -16,7 +16,7 @@ source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
 source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
-
+source('components/jmarca-calvad_rscripts/lib/vds_impute.R')
 
 
 district = Sys.getenv(c('RDISTRICT'))[1]
@@ -51,7 +51,7 @@ vds.id <-  get.vdsid.from.filename(fname)
 path = paste('/data/pems/breakup/',district,sep='')
 goodfactor <-   3.5
 seconds = 60
-
+file <- paste(path,file,sep='/')
 done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=60,goodfactor=goodfactor)
 if (done != 1){
   couch.set.state(year,vds.id,list('vdsraw_chain_lengths'=done))
