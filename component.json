@@ -1,0 +1,13 @@
+{
+  "name": "safetyInR",
+  "repo": "jmarca/safetyInR",
+  "description": "mondo package of R code for safety project",
+  "version": "0.0.1",
+  "keywords": ["safety", "R", "rstats"],
+  "dependencies": {
+    "jmarca/rstats_couch_utils":"*"
+  },
+  "main":"couchUtils.R",
+  "scripts": ["couchUtils.R"],
+  "license": "GPLV2"
+}
