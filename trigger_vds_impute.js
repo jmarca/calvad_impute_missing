@@ -75,7 +75,7 @@ var trigger_R_job = function(task,done){
     })
 }
 
-var file_queue=async.queue(trigger_R_job,1)
+var file_queue=async.queue(trigger_R_job,2)
 
 var years = // already done:  [2007,2008,2009]
     [2010,2011];
@@ -113,7 +113,7 @@ _.each(years,function(year){
 async.forEach(years_districts,function(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)
-    get_files.get_yearly_vdsfiles({district:opt.env['RDISTRICT']
+    get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
                                   ,year:opt.env['RYEAR']}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
