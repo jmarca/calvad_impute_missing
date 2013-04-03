@@ -46,3 +46,37 @@ describe('get vds files',function(){
                                          })
        })
 })
+describe('get vds files local',function(){
+    it('should get txt files in 2007, D05'
+      ,function(done){
+           get_files.get_yearly_vdsfiles_local({'district':'D05'
+                                               ,'year':2007}
+                                              ,function(err,list){
+                                                   should.not.exist(err)
+                                                   //console.log(list)
+                                                   list.should.have.property('length',10)
+                                                   _.each(list
+                                                         ,function(f){
+                                                              f.should.match(/\.txt\.gz$/);
+                                                          })
+                                                       return done()
+                                               })
+       })
+    it('should get rdata files in 2007, D05'
+      ,function(done){
+           var yr = 2007
+           get_files.get_yearly_vdsfiles_local({'district':'D05'
+                                               ,'year':yr
+                                               ,'rdata':1}
+                                              ,function(err,list){
+                                                   should.not.exist(err)
+                                                   //console.log(list)
+                                                   list.should.have.property('length',10)
+                                                   _.each(list
+                                                         ,function(f){
+                                                              f.should.match(new RegExp(yr+'RData$'));
+                                                          })
+                                                       return done()
+                                               })
+       })
+})

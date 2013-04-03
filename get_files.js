@@ -2,7 +2,26 @@ var superagent = require('superagent')
 var server = process.env.CALVAD_FILE_SERVER || 'http://calvad.ctmlabs.net'
 var port = process.env.CALVAD_FILE_PORT || 80
 var fileserver = port === 80 ? server : server +':'+port
+var path = require('path')
+var glob = require('glob')
 
+var pems_root = '/data/pems/breakup/'
+var root = path.normalize(pems_root)
+function get_yearly_vdsfiles_local(opts,cb){
+    if(opts.year === undefined) throw Error('need year in opts')
+    if(opts.district === undefined) throw Error('need district in opts')
+    var district = opts.district
+    var pattern
+    if(opts.rdata){
+        pattern = ["**/*ML_*df*",opts.year,"RData"].join('')
+    }else{
+        pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
+    }
+    var searchpath = [root,district].join('/')
+    glob(pattern,{cwd:searchpath,dot:true},cb);
+    return null
+
+}
 function get_yearly_vdsfiles(opts,cb){
     if(opts.year === undefined) throw Error('need year in opts')
     if(opts.district === undefined) throw Error('need district in opts')
@@ -25,3 +44,4 @@ function get_yearly_vdsfiles(opts,cb){
     })
 }
 exports.get_yearly_vdsfiles=get_yearly_vdsfiles
+exports.get_yearly_vdsfiles_local=get_yearly_vdsfiles_local
