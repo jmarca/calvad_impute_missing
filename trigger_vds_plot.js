@@ -6,11 +6,11 @@ var fs = require('fs');
 var async = require('async');
 var _ = require('underscore');
 
+
 //parse the command line args using optimist
 // none for now
 
 var R;
-
 
 
 var  increment = function(keys){

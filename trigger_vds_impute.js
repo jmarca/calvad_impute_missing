@@ -4,7 +4,12 @@ var util  = require('util'),
 var path = require('path');
 var fs = require('fs');
 var async = require('async');
-var _ = require('underscore');
+var _ = require('lodash');
+var get_files = require('./get_files')
+var suss_detector_id = require('suss_detector_id')
+var couch_check = require('couch_check_state')
+
+var statedb = 'vdsdata%2ftracking'
 
 //parse the command line args using optimist
 // none for now
@@ -22,127 +27,95 @@ var R;
  *
  */
 
-var  increment = function(keys){
-    var years = [2007,2008,2009,2010,2011];
-    var districts = ['/data/pems/breakup/D04'
-                     ,'/data/pems/breakup/D07'
-                     ,'/data/pems/breakup/D12'
-                     ,'/data/pems/breakup/D05'
-                     ,'/data/pems/breakup/D06'
-                     ,'/data/pems/breakup/D08'
-                     ,'/data/pems/breakup/D03'
-                     ,'/data/pems/breakup/D11'
-                     ,'/data/pems/breakup/D10'
-    ]
-    var yidx = []
-    var didx = []
-    _.each(keys
-           ,function(k){
-               yidx[k]=-1;
-               didx[k]=100;
-           })
+function vdsfile_handler(opt){
+    return function(f,cb){
+        var did = suss_detector_id(f)
 
-    function _increment(k){
-        if(didx[k] >= districts.length - 1){
-            // increment year, reset didx
-            yidx[k] += 1;
-            didx[k] = 0;
-        }else{
-            didx[k] += 1;
-        }
-        if(yidx[k] >= years.length){
-            return false;
-        }else{
-            return true;
-        }
+        couch_check({'db':statedb
+                    ,'doc':did
+                    ,'year':opt.env['RYEAR']
+                    ,'state':'vdsraw_chain_lengths'
+                    }
+                   ,function(err,state){
+                        if(err) return cb(err)
+                        if(state === null)
+                            file_queue.push({file:f
+                                            ,env:opt})
+                        return cb(err)
+                    });
+        return null;
     }
-    _increment.getDistrict=function(k){
-        if(yidx[k] >= years.length)
-            return null;
-        return districts[didx[k]];
-    }
-    _increment.getYear=function(k){
-        if(yidx[k] >= years.length)
-            return null;
-        return years[yidx[k]];
-    }
-    return _increment;
-}([1,2]);
+}
 
 
-var RCall = {1:['--no-restore','--no-save','vds_self_impute_missing_distributed.R']
-             //,2:['--no-restore','--no-save','vds_imputation_prepwork.R']
-             ,2:['--no-restore','--no-save','vds_self_impute_missing_distributed.R']
-            };
+var trigger_R_job = function(task,done){
+    var file = task.file
+    var did = suss_detector_id(file)
+    var opts = _.clone(task.opts)
+    opts.env['FILE']=file
 
-function loop(f){
+    var R  = spawn('Rscript', RCall, opts);
+    R.stderr.setEncoding('utf8')
+    R.stdout.setEncoding('utf8')
+    var logfile = 'log/vdsimpute_log_'+did+'.log'
+    var logstream = fs.createWriteStream(logfile
+                                        ,{flags: 'a'
+                                         ,encoding: 'utf8'
+                                         ,mode: 0666 })
+    R.stdout.pipe(logstream)
+    R.stderr.pipe(logstream)
+    R.on('exit',function(code){
+        console.log('got exit: '+code+', for ',did)
+        return done()
+    })
+}
 
-    function _loop(cb){
+var file_queue=async.queue(trigger_R_job,2)
 
-        function exithandler(code) {
-            if (code == 10 || code == 1) {
-                console.log('got exit: '+code+', repeating');
-                async.nextTick(innerloop)
-            }else{
-                console.log('got exit, code is '+code);
-                cb()
-            }
-            return null;
-        }
-
-
-        function innerloop(){
-            console.log('looping '+f);
-            var opts = { cwd: undefined,
-                         env: process.env
-                       }
-            opts.env['RREVERSE']=f;
-            opts.env['RYEAR'] = increment.getYear(f);
-            opts.env['RDISTRICT'] =  increment.getDistrict(f);
-
-            R  = spawn('Rscript', RCall[f],opts);
-            R.stderr.setEncoding('utf8');
-            R.stdout.setEncoding('utf8');
-
-            var logstream = fs.createWriteStream('vdsimpute_log_'+f+'.log', { flags: 'a',
-                                                                              encoding: 'utf8',
-                                                                              mode: 0666 });
+var years = [2007,2008,2009,2010,2011];
+var districts = ['D04'
+                ,'D07'
+                ,'D12'
+                ,'D05'
+                ,'D06'
+                ,'D08'
+                ,'D03'
+                ,'D11'
+                ,'D10'
+                ]
 
 
-            R.stdout.pipe(logstream)
-            R.stderr.pipe(logstream)
-
-            R.on('exit',exithandler);
-
-        }
-        async.nextTick(innerloop)
-    }
-    return _loop;
-};
+var RCall = ['--no-restore','--no-save','vds_impute.R']
 
 
-var paused_start ;
+var opts = { cwd: undefined,
+             env: process.env
+           }
+var years_districts = []
+_.each(years,function(year){
+    _.each(districts,function(district){
+        var o = _.clone(opts)
+        o.env['RYEAR'] = year
+        o.env['RDISTRICT']=district
+        years_districts.push(o)
+    })
+});
 
-var dual_R_calls = [loop(1)
-                    ,function(cb){
-                        f = loop(2)
-                        setTimeout(function(){
-                            f(cb)
-                        }
-                                   , 10000);
-                    }];
+async.forEach(years_districts,function(opt,cb){
+    // get the files
+    var handler = vdsfile_handler(opt)
+    get_files.get_yearly_vdsfiles({district:opt.env['RDISTRICT']
+                                  ,year:opt.env['RYEAR']}
+                                 ,function(err,list){
+                                      if(err) throw new Error(err)
+                                      async.forEach(list
+                                                   ,handler
+                                                   ,cb);
+                                      return null
+                                  });
+});
 
 
-async.whilst(function(){return increment(1);}
-             ,loop(1)
-             ,function(err){
-                 console.log('alldone with 1');
-             } );
-async.whilst(function(){return increment(2);}
-             ,loop(2)
-             ,function(err){
-                 console.log('alldone with 2');
-             } );
 
 
 1;
