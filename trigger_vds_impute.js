@@ -11,9 +11,6 @@ var couch_check = require('couch_check_state')
 
 var statedb = 'vdsdata%2ftracking'
 
-//parse the command line args using optimist
-// none for now
-
 var R;
 
 
