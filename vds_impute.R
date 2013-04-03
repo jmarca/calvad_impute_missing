@@ -2,7 +2,7 @@
 ## loaded and parsed and saved as a dataframe, or else the existing
 ## dataframe will get loaded.  In either case, the plots will get made
 ## and saved to couchdb
-source("components/jmarca-bdp/load.pems.raw.file.R")
+source("components/jmarca-calvad_rscripts/lib/load.pems.raw.file.R")
 library('zoo')
 library('Hmisc')
 library('Amelia')
@@ -10,12 +10,12 @@ library('lattice')
 library('RCurl')
 library('RJSONIO')
 
-source("components/jmarca-bdp/vds.processing.functions.R")
+source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
 source('components/jmarca-rstats_couch_utils/couchUtils.R')
 source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
-source('components/jmarca-bdp/get.medianed.amelia.vds.R')
-source('components/jmarca-bdp/amelia_plots_and_diagnostics.R')
+source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
+source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
 
 
 

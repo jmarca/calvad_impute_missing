@@ -5,9 +5,9 @@
   "version": "0.0.1",
   "keywords": ["calvad", "R", "rstats"],
   "dependencies": {
+    "jmarca/calvad_rscripts":"*",
     "jmarca/rstats_couch_utils":"*",
-    "jmarca/rstats_remote_files":"*",
-    "jmarca/bdp"
+    "jmarca/rstats_remote_files":"*"
   },
   "main":"index.js",
   "license": "GPLV2"
