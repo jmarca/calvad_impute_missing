@@ -1,0 +1,33 @@
+{
+  "name": "calvad_impute_missing",
+  "version": "0.0.1",
+  "description": "trigger imputation routines in CalVAD",
+  "main": "trigger_vds_impute.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "superagent": "",
+    "async": "",
+    "lodash": "",
+    "suss_detector_id": "https://github.com/jmarca/suss_detector_id",
+    "couch_check_state": "https://github.com/jmarca/couch_check_state"
+  },
+  "devDependencies": {
+    "should": ""
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmarca/calvad_impute_missing"
+  },
+  "keywords": [
+    "calvad",
+    "imputation"
+  ],
+  "author": "James E. Marca",
+  "license": "BSD",
+  "readmeFilename": "README.md"
+}

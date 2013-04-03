@@ -1,12 +1,13 @@
 {
-  "name": "bdp",
-  "repo": "jmarca/bdp",
-  "description": "mondo package of R code for CalVAD project",
+  "name": "calvad_impute_missing",
+  "repo": "jmarca/calvad_impute_missing",
+  "description": "trigger the imputation routines for CalVAD",
   "version": "0.0.1",
   "keywords": ["calvad", "R", "rstats"],
   "dependencies": {
-    "jmarca/rstats_couch_utils":"*"
-    "jmarca/rstats_remote_files":"*"
+    "jmarca/rstats_couch_utils":"*",
+    "jmarca/rstats_remote_files":"*",
+    "jmarca/bdp"
   },
   "main":"index.js",
   "license": "GPLV2"
