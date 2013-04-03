@@ -38,9 +38,12 @@ function vdsfile_handler(opt){
                     }
                    ,function(err,state){
                         if(err) return cb(err)
-                        if(state === null)
-                            file_queue.push({file:f
-                                            ,env:opt})
+                        console.log({file:f,state:state})
+                        if(!state){
+                            console.log('push to queue')
+                            file_queue.push({'file':f
+                                            ,'opts':opt})
+                        }
                         return cb(err)
                     });
         return null;
@@ -50,6 +53,7 @@ function vdsfile_handler(opt){
 
 var trigger_R_job = function(task,done){
     var file = task.file
+    console.log('processing '+file)
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
@@ -66,19 +70,22 @@ var trigger_R_job = function(task,done){
     R.stderr.pipe(logstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',did)
+        // throw new Error('die')
         return done()
     })
 }
 
-var file_queue=async.queue(trigger_R_job,2)
+var file_queue=async.queue(trigger_R_job,1)
 
-var years = [2007,2008,2009,2010,2011];
+var years = // already done:  [2007,2008,2009]
+    [2010,2011];
+
 var districts = ['D04'
-                ,'D07'
+                ,'D08'
                 ,'D12'
                 ,'D05'
                 ,'D06'
-                ,'D08'
+                ,'D07'
                 ,'D03'
                 ,'D11'
                 ,'D10'
@@ -94,13 +101,15 @@ var opts = { cwd: undefined,
 var years_districts = []
 _.each(years,function(year){
     _.each(districts,function(district){
-        var o = _.clone(opts)
+        var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
         years_districts.push(o)
     })
 });
 
+// debugging, just do one combo for now
+// years_districts=[years_districts[0]]
 async.forEach(years_districts,function(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)

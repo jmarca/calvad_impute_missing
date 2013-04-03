@@ -10,8 +10,8 @@
     "superagent": "",
     "async": "",
     "lodash": "",
-    "suss_detector_id": "https://github.com/jmarca/suss_detector_id",
-    "couch_check_state": "https://github.com/jmarca/couch_check_state"
+    "suss_detector_id" : "git://github.com/jmarca/suss_detector_id.git",
+    "couch_check_state": "git://github.com/jmarca/couch_check_state.git"
   },
   "devDependencies": {
     "should": ""
