@@ -18,6 +18,8 @@ source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
 source('components/jmarca-calvad_rscripts/lib/vds_impute.R')
 
+library('RPostgreSQL')
+
 
 district = Sys.getenv(c('RDISTRICT'))[1]
 if(is.null(district)){
