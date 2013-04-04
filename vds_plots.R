@@ -12,7 +12,7 @@ library('RJSONIO')
 
 source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
 source('components/jmarca-rstats_couch_utils/couchUtils.R')
-source('components/jmarca-rstats_remote_files/remoteFiles.R')
+source('components/jmarca-rstats_remote_files/remoteFile.R')
 
 source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
@@ -88,7 +88,7 @@ vds.service <- 'vdsdata'
 district.path=paste(district,'/',sep='')
 
 file.names <- strsplit(thefile,split="/")
-file.names <- thefile.names[[1]]
+file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
 
 vds.id <-  get.vdsid.from.filename(fname)
