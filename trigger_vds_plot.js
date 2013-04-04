@@ -55,7 +55,7 @@ var trigger_R_job = function(task,done){
     var R  = spawn('Rscript', RCall, opts);
     R.stderr.setEncoding('utf8')
     R.stdout.setEncoding('utf8')
-    var logfile = 'log/vdsplot_log_'+did+'.log'
+    var logfile = 'log/vdsplot_'+did+'_'+opts.env['RYEAR']+'.log'
     var logstream = fs.createWriteStream(logfile
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
