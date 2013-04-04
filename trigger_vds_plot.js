@@ -69,7 +69,7 @@ var trigger_R_job = function(task,done){
     })
 }
 
-var file_queue=async.queue(trigger_R_job,1)
+var file_queue=async.queue(trigger_R_job,2)
 
 var years = [2007,2008,2009,2010,2011];
 

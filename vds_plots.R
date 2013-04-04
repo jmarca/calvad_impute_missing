@@ -12,7 +12,7 @@ library('RJSONIO')
 
 source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
 source('components/jmarca-rstats_couch_utils/couchUtils.R')
-source('components/jmarca-rstats_remote_files/remoteFile.R')
+source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
 source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
@@ -34,10 +34,10 @@ plot.raw.data <- function(fname,f,path,year,vds.id){
   ## is there a df available?
   ts <- data.frame()
   df <- data.frame()
-  df.pattern =paste('**/',fname,'*df*',year,'RData',sep='')
+  ## df.pattern =paste('**/',fname,'*df*',year,'RData',sep='')
+  ##rdata.file <- make.amelia.output.file(path,fname,seconds,year)
 
-  rdata.file <- make.amelia.output.file(path,fname,seconds,year)
-  fetched <- fetch.remote.file(server,service='vdsdata',root=path,file=rdata.file)
+  fetched <- fetch.remote.file(server,service='vdsdata',root=path,file=paste(path,f,sep=''))
   r <- try(result <- load(file=fetched))
   if(class(r) == "try-error") {
     print (paste('need to get the raw file.  hold off for now'))
