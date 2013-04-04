@@ -104,17 +104,18 @@ _.each(years,function(year){
 
 // debugging, just do one combo for now
 // years_districts=[years_districts[0]]
-async.forEach(years_districts,function(opt,cb){
+async.eachLimit(years_districts,2,function(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)
+    console.log('checking '+opt.env['RDISTRICT']+' '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles({'district':opt.env['RDISTRICT']
                                   ,'year':opt.env['RYEAR']
                                   ,'rdata':1}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
-                                      async.forEach(list
-                                                   ,handler
-                                                   ,cb);
+                                      async.each(list
+                                                ,handler
+                                                ,cb);
                                       return null
                                   });
 });

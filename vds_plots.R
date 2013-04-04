@@ -37,7 +37,7 @@ plot.raw.data <- function(fname,f,path,year,vds.id){
   ## df.pattern =paste('**/',fname,'*df*',year,'RData',sep='')
   ##rdata.file <- make.amelia.output.file(path,fname,seconds,year)
 
-  fetched <- fetch.remote.file(server,service='vdsdata',root=path,file=paste(path,f,sep=''))
+  fetched <- fetch.remote.file(server,service='vdsdata',root=path,file=f)
   r <- try(result <- load(file=fetched))
   if(class(r) == "try-error") {
     print (paste('need to get the raw file.  hold off for now'))
@@ -95,7 +95,8 @@ vds.id <-  get.vdsid.from.filename(fname)
 result <- plot.raw.data(fname,thefile,district.path,year,vds.id)
 have.plot <- check.for.plot.attachment(vds.id,year,NULL,subhead='\npost imputation')
 if(! have.plot ){
-  get.and.plot.vds.amelia(vds.id,year)
+  result <- get.and.plot.vds.amelia(vds.id,year)
 }
+1
 quit(save='no',status=10)
 
