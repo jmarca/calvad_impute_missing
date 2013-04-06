@@ -25,14 +25,14 @@ function get_yearly_vdsfiles_local(opts,cb){
 function get_yearly_vdsfiles(opts,cb){
     if(opts.year === undefined) throw Error('need year in opts')
     if(opts.district === undefined) throw Error('need district in opts')
-    var pattern
+    var pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
     if(opts.rdata){
         pattern = ["**/*ML_*df*",opts.year,"RData"].join('')
-    }else{
-        pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
+    }
+    if(opts.amelia){
+        pattern = ["**/*ML_*imputed*",opts.year,"RData"].join('')
     }
     var query = fileserver+'/vdsdata/'+opts.district+'?pattern='+pattern
-    console.log(query)
     superagent
     .get(query)
     .set('accept','application/json')

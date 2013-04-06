@@ -45,6 +45,23 @@ describe('get vds files',function(){
                                              return done()
                                          })
        })
+    it('should get rdata files in 2007, D05'
+      ,function(done){
+           var yr = 2007
+           get_files.get_yearly_vdsfiles({'district':'D05'
+                                         ,'year':yr
+                                         ,'amelia':1}
+                                        ,function(err,list){
+                                             should.not.exist(err)
+                                             //console.log(list)
+                                             list.should.have.property('length',10)
+                                             _.each(list
+                                                   ,function(f){
+                                                        f.should.match(new RegExp(yr+'RData$'));
+                                                    })
+                                             return done()
+                                         })
+       })
 })
 describe('get vds files local',function(){
     it('should get txt files in 2007, D05'
