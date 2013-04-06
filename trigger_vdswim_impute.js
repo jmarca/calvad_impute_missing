@@ -168,7 +168,20 @@ var setup_R_job = function(task,done){
 }
 
 
+var trigger_R_date = new Date()
+
 var trigger_R_job = function(task,done){
+    console.log('waiting to start '+task.file)
+    var new_R_date = new Date()
+    if(new_R_date - trigger_R_date > 3 * 60 * 1000) spawnR(task,done)
+    setTimeout(function(){
+        trigger_R_job(task,done)
+    }, 2*60*1000);
+}
+
+function spawnR(task,done){
+    trigger_R_date = new Date()
+
     var file = task.file
     console.log('processing '+file)
     var did = suss_detector_id(file)
