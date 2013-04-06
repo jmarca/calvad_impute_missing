@@ -12,7 +12,8 @@
     "glob": "",
     "lodash": "",
     "suss_detector_id" : "git://github.com/jmarca/suss_detector_id.git",
-    "couch_check_state": "git://github.com/jmarca/couch_check_state.git"
+    "couch_check_state": "git://github.com/jmarca/couch_check_state.git",
+    "couch_set_state": "git://github.com/jmarca/couch_set_state.git"
   },
   "devDependencies": {
     "should": ""
