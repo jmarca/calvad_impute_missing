@@ -73,34 +73,64 @@ function vdsfile_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
         // need to check that truck vols have not yet been imputed
-        couch_check({'db':statedb
-                    ,'doc':did
-                    ,'year':opt.env['RYEAR']
-                    ,'state':'truckimputed'
-                    }
-                   ,function(err,state){
-                        if(err) return cb(err)
-                        if(state && (finish_regex.test(state)) || state === inprocess_string){
-                            return cb()
-                        }
-                        // perhaps in process for the current process
-                        // need to verify that the raw imputation is okay
-                        couch_check({'db':statedb
-                                    ,'doc':did
-                                    ,'year':opt.env['RYEAR']
-                                    ,'state':'vdsraw_chain_lengths'
-                                    }
-                                   ,function(err,state){
-                                        if(err) return cb(err)
-                                        if(state && _.isArray(state) && state.length==5){
-                                            // the raw data is okay to proceed
-                                            file_queue.push({'file':f
-                                                            ,'opts':opt})
-                                        }
-                                        return cb(err)
-                                    })
-                        return null
-                    })
+        async.series([function(done){
+                          couch_check({'db':statedb
+                                      ,'doc':did
+                                      ,'year':opt.env['RYEAR']
+                                      ,'state':'truckimputed'
+                                      }
+                                     ,function(err,state){
+                                          if(err) throw new Error(err)
+                                          if(state && (finish_regex.test(state)) || state === inprocess_string){
+                                              return done('quit')
+                                          }
+                                          return done()
+                                      })
+                          return null
+                      }
+                     ,function(done){
+                          couch_check({'db':statedb
+                                      ,'doc':did
+                                      ,'year':opt.env['RYEAR']
+                                      ,'state':'truckimputation_chain_lengths'
+                                      }
+                                     ,function(err,state){
+                                          if(err) throw new Error(err)
+                                          if(state && _.isArray(state) && state.length==5){
+                                              return done('quit')
+                                          }
+                                          return done()
+                                      })
+                          return null
+                      }
+                     ,function(done){
+                          // perhaps in process for the current process
+                          // need to verify that the raw imputation is okay
+                          couch_check({'db':statedb
+                                      ,'doc':did
+                                      ,'year':opt.env['RYEAR']
+                                      ,'state':'vdsraw_chain_lengths'
+                                      }
+                                     ,function(err,state){
+                                          if(err) throw new Error(err)
+                                          if(state && _.isArray(state) && state.length==5){
+                                              // the raw data is okay to proceed
+                                              return done()
+                                          }
+                                          return done('quit')
+                                      })
+                          return null
+                      }]
+                    ,function(err){
+                         if(err){
+                             if(err === 'quit')
+                                 return cb()
+                             return cb(err)
+                         }
+                         file_queue.push({'file':f
+                                         ,'opts':opt})
+                         return cb()
+                     })
         return null
     }
 }
@@ -166,30 +196,30 @@ var trigger_R_job = function(task,done){
                               }
                              ,function(err){
                                   if(err) throw new Error(err)
-                                  throw new Error('die in testing')
+                                  //throw new Error('die in testing')
                                   return done()
                               })
         }else{
-            throw new Error('die in testing')
-            return done()
+            //throw new Error('die in testing')
+            done()
         }
+        return null
     })
 }
+var jobs = process.env.NUM_R_JOBS || 2
+var file_queue=async.queue(setup_R_job,jobs)
 
-var file_queue=async.queue(trigger_R_job,2)
+var years = [2007,2008,2009,2010] // 2011
 
-var years = [2007]//,2008,2009,2010,2011];
-
-var districts = [//'D04'
-                //,
-    'D08'
-    //            ,'D12'
-      //          ,'D05'
-        //        ,'D06'
-          //      ,'D07'
-            //    ,'D03'
-              //  ,'D11'
-                //,'D10'
+var districts = ['D04'
+                ,'D08'
+                ,'D12'
+                ,'D05'
+                ,'D06'
+                ,'D07'
+                ,'D03'
+                ,'D11'
+                ,'D10'
                 ]
 
 
@@ -216,7 +246,7 @@ async.eachLimit(years_districts,2,function(opt,cb){
     var handler = vdsfile_handler(opt)
     get_files.get_yearly_vdsfiles({district:opt.env['RDISTRICT']
                                   ,year:opt.env['RYEAR']
-                                  ,'rdata':1}
+                                  ,'amelia':1}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
                                       async.each(list

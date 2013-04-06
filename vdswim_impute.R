@@ -1,3 +1,5 @@
+library('zoo')
+
 server <- "http://calvad.ctmlabs.net"
 vds.service <- 'vdsdata'
 wim.service <- 'wimdata'
@@ -9,9 +11,11 @@ source('components/jmarca-rstats_couch_utils/couchUtils.R')
 source('components/jmarca-rstats_remote_files/remoteFiles.R')
 source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
+source('components/jmarca-calvad_rscripts/lib/get_couch.R')
+source('components/jmarca-calvad_rscripts/lib/just.amelia.call.R')
 
 ## source('components/jmarca-calvad_rscripts/lib/process.raw.pems.file.R')
-##source('components/jmarca-calvad_rscripts/lib/wim.loading.functions.R')
+source('components/jmarca-calvad_rscripts/lib/wim.loading.functions.R')
 ##source('components/jmarca-calvad_rscripts/lib/wim.pre.processing.R')
 source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
 ##source('components/jmarca-calvad_rscripts/lib/wim.vds.processing.functions.R')
@@ -34,14 +38,11 @@ con <-  dbConnect(m
 
 ## pass in the vdsid and the year
 
-impute.vds.site <- function(vdsid,year,vdsfile){
+impute.vds.site <- function(vdsid,year,vdsfile,district){
 
-  print(paste('processing ',paste(entry,collapse=', ')))
-  ## I need to check this.  I thought entry contained both the id and the direction
-  district <- district.from.vdsid(vdsid)
-
+  print(paste('processing ',paste(vdsid,collapse=', ')))
   ## load the vds data
-  df.vds.zoo <- get.zooed.vds.amelia(vdsid,serverfile=vdsfile)
+  df.vds.zoo <- get.zooed.vds.amelia(vdsid,serverfile=vdsfile,path=district)
   if(is.null(df.vds.zoo)){
     exit(0)
   }
@@ -204,13 +205,14 @@ impute.vds.site <- function(vdsid,year,vdsfile){
 
   write.csv(df.amelia.c.l,file=file,row.names = FALSE)
   ## run perl code to slurp output
-  system2('perl',paste(' -w /home/james/repos/bdp/parse_imputed_vds_trucks_to_couchDB.pl --cdb=imputed/breakup/ --file=',file,sep='')
-          ,stdout = FALSE, stderr = paste(output.path,paste(vdsid,year,'parse_output.txt',sep='.'),sep='/'),wait=FALSE)
+  ## system2('perl',paste(' -w /home/james/repos/bdp/parse_imputed_vds_trucks_to_couchDB.pl --cdb=imputed/breakup/ --file=',file,sep='')
+  ##         ,stdout = FALSE, stderr = paste(output.path,paste(vdsid,year,'parse_output.txt',sep='.'),sep='/'),wait=FALSE)
 
   ## while that runs, make some plots
-
+  df.amelia.c$vds_id <- NULL
   ## generate a df for plots.  Use median here, because that is what I will do with final output
-  df.amelia.zoo <- medianed.aggregate.df(df.amelia.c,median)
+  
+  df.amelia.zoo <- medianed.aggregate.df(df.amelia.c)
   df.med <- unzoo.incantation(df.amelia.zoo)
   rm(df.amelia.zoo)
   make.truck.plots(df.med,year,vdsid,'vds',vdsid,imputed=TRUE)
@@ -248,11 +250,11 @@ seconds <- 3600
 
 wim.vds.pairs <- get.list.closest.wim.pairs()
 
-file.names <- strsplit(file,split="/")
+file.names <- strsplit(vdsfile,split="/")
 file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
 vds.id <-  get.vdsid.from.filename(fname)
 
 
-impute.vds.site(vds.id,year,vdsfile=vdsfile)
+impute.vds.site(vds.id,year,vdsfile=vdsfile,district=district)
 
