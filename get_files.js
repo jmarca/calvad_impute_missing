@@ -32,6 +32,7 @@ function get_yearly_vdsfiles(opts,cb){
         pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
     }
     var query = fileserver+'/vdsdata/'+opts.district+'?pattern='+pattern
+    console.log(query)
     superagent
     .get(query)
     .set('accept','application/json')

@@ -178,17 +178,18 @@ var trigger_R_job = function(task,done){
 
 var file_queue=async.queue(trigger_R_job,2)
 
-var years = [2007,2008,2009,2010,2011];
+var years = [2007]//,2008,2009,2010,2011];
 
-var districts = ['D04'
-                ,'D08'
-                ,'D12'
-                ,'D05'
-                ,'D06'
-                ,'D07'
-                ,'D03'
-                ,'D11'
-                ,'D10'
+var districts = [//'D04'
+                //,
+    'D08'
+    //            ,'D12'
+      //          ,'D05'
+        //        ,'D06'
+          //      ,'D07'
+            //    ,'D03'
+              //  ,'D11'
+                //,'D10'
                 ]
 
 
