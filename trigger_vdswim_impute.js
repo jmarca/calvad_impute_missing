@@ -73,7 +73,7 @@ function vdsfile_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
         // need to check that truck vols have not yet been imputed
-        async.series([function(done){
+        async.series([function(done){ // check for truckimputed variable
                           couch_check({'db':statedb
                                       ,'doc':did
                                       ,'year':opt.env['RYEAR']
@@ -88,7 +88,7 @@ function vdsfile_handler(opt){
                                       })
                           return null
                       }
-                     ,function(done){
+                     ,function(done){ // double check, via truckimputation_chain_lengths
                           couch_check({'db':statedb
                                       ,'doc':did
                                       ,'year':opt.env['RYEAR']
@@ -104,7 +104,6 @@ function vdsfile_handler(opt){
                           return null
                       }
                      ,function(done){
-                          // perhaps in process for the current process
                           // need to verify that the raw imputation is okay
                           couch_check({'db':statedb
                                       ,'doc':did
@@ -117,6 +116,25 @@ function vdsfile_handler(opt){
                                               // the raw data is okay to proceed
                                               return done()
                                           }
+                                          console.log(did +' no vds imputation')
+                                          return done('quit')
+                                      })
+                          return null
+                      }
+                     ,function(done){
+                          // need to verify that the vds site has WIM neighbors
+                          couch_check({'db':statedb
+                                      ,'doc':did
+                                      ,'year':opt.env['RYEAR']
+                                      ,'state':'wim_neigbors'
+                                      }
+                                     ,function(err,state){
+                                          if(err) throw new Error(err)
+                                          if(state && _.isArray(state) && state.length>0){
+                                              // the raw data is okay to proceed
+                                              return done()
+                                          }
+                                          console.log(did +' no wim neighbors')
                                           return done('quit')
                                       })
                           return null
@@ -128,8 +146,9 @@ function vdsfile_handler(opt){
                              return cb(err)
                          }
                          file_queue.push({'file':f
-                                         ,'opts':opt})
-                         return cb()
+                                         ,'opts':opt
+                                         ,'cb':cb})
+                         return null
                      })
         return null
     }
@@ -160,7 +179,7 @@ var setup_R_job = function(task,done){
                               }
                              ,function(err){
                                   if(err) return done(err)
-                                  return trigger_R_job(task,done)
+                                  return spawnR(task,done)
                               })
                     return null
                 })
@@ -168,9 +187,25 @@ var setup_R_job = function(task,done){
 }
 
 
+var trigger_R_date = new Date()
+
 var trigger_R_job = function(task,done){
+    console.log('waiting to start '+task.file)
+    var new_R_date = new Date()
+    if(new_R_date - trigger_R_date > 10 * 1000) return spawnR(task,done)
+    setTimeout(function(){
+        trigger_R_job(task,done)
+    }, 5*1000);
+    return null
+}
+
+function spawnR(task,done){
+    trigger_R_date = new Date()
+
     var file = task.file
     console.log('processing '+file)
+    // trigger the file loop callback
+    if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
@@ -241,9 +276,10 @@ _.each(years,function(year){
 
 // debugging, just do one combo for now
 // years_districts=[years_districts[0]]
-async.eachLimit(years_districts,2,function(opt,cb){
+async.eachLimit(years_districts,1,function(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)
+    console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles({district:opt.env['RDISTRICT']
                                   ,year:opt.env['RYEAR']
                                   ,'amelia':1}

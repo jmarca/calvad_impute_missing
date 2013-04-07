@@ -39,11 +39,13 @@ function vdsfile_handler(opt){
                         if(!state){
                             console.log('push to queue')
                             file_queue.push({'file':f
-                                            ,'opts':opt})
+                                            ,'opts':opt
+                                            ,'cb':cb})
+                            return null
                         }
                         return cb(err)
                     });
-        return null;
+        return null
     }
 }
 
@@ -51,6 +53,8 @@ function vdsfile_handler(opt){
 var trigger_R_job = function(task,done){
     var file = task.file
     console.log('processing '+file)
+    // trigger the file loop callback
+    if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
@@ -74,8 +78,7 @@ var trigger_R_job = function(task,done){
 
 var file_queue=async.queue(trigger_R_job,2)
 
-var years = // already done:  [2007,2008,2009]
-    [2010,2011];
+var years = [2007,2008,2009,2010,2011];
 
 var districts = ['D04'
                 ,'D08'
@@ -107,18 +110,19 @@ _.each(years,function(year){
 
 // debugging, just do one combo for now
 // years_districts=[years_districts[0]]
-async.forEach(years_districts,function(opt,cb){
+async.eachLimit(years_districts,1,function(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)
+    console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
-                                  ,year:opt.env['RYEAR']}
-                                 ,function(err,list){
-                                      if(err) throw new Error(err)
-                                      async.forEach(list
-                                                   ,handler
-                                                   ,cb);
-                                      return null
-                                  });
+                                        ,year:opt.env['RYEAR']}
+                                       ,function(err,list){
+                                            if(err) throw new Error(err)
+                                            async.forEach(list
+                                                         ,handler
+                                                         ,cb);
+                                            return null
+                                        });
 });
 
 
