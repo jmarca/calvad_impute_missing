@@ -36,7 +36,9 @@ function vdsfile_handler(opt){
                         if(!state){
                             console.log('push to queue')
                             file_queue.push({'file':f
-                                            ,'opts':opt})
+                                            ,'opts':opt
+                                            ,'cb':cb})
+                            return null
                         }
                         return cb(err)
                     });
@@ -48,6 +50,8 @@ function vdsfile_handler(opt){
 var trigger_R_job = function(task,done){
     var file = task.file
     console.log('processing '+file)
+    // trigger the file loop callback
+    if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
