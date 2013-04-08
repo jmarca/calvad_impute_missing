@@ -36,7 +36,7 @@ function vdsfile_handler(opt){
                    ,function(err,state){
                         if(err) return cb(err)
                         console.log({file:f,state:state})
-                        if(!state){
+                        if( !state || !_.isArray(state) ){
                             console.log('push to queue')
                             file_queue.push({'file':f
                                             ,'opts':opt

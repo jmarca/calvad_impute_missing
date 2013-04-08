@@ -24,12 +24,16 @@ function vdsfile_handler(opt){
                   ,'state':'have_raw_data'
                   ,'value':'1'
                   }
-                 ,cb);
+                 ,function(e,s){
+                      if(e) throw new Error(e)
+                      cb()
+                  });
         return null
     }
 }
 
-var years = [2006,2007,2008,2009,2010,2011];
+var years = [//2006,2007,
+    2008,2009,2010,2011];
 
 var districts = ['D04'
                 ,'D08'
@@ -62,9 +66,10 @@ async.eachLimit(years_districts,1,function(opt,cb){
                                         ,year:opt.env['RYEAR']}
                                        ,function(err,list){
                                             if(err) throw new Error(err)
-                                            async.forEach(list
-                                                         ,handler
-                                                         ,cb);
+                                            async.eachLimit(list
+                                                           ,5
+                                                           ,handler
+                                                           ,cb);
                                             return null
                                         });
 });
