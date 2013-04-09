@@ -190,16 +190,18 @@ var setup_R_job = function(task,done){
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts,true)
     // need to check again that truck vols have not yet been imputed
+    console.log('checking ',did)
     couch_check({'db':statedb
                 ,'doc':did
                 ,'year':opts.env['RYEAR']
                 ,'state':'truckimputed'
                 }
                ,function(err,state){
-                    if(err) return done(err)
+                    if(err) throw new Error(err)
                     if(state && (finish_regex.test(state)) || state === inprocess_string){
                         return done()
                     }
+                    console.log('checking out ',did)
                     // check out for processing
                     couch_set({'db':statedb
                               ,'doc':did
@@ -208,7 +210,8 @@ var setup_R_job = function(task,done){
                               ,'value':inprocess_string
                               }
                              ,function(err){
-                                  if(err) return done(err)
+                                  if(err) throw new Error(err)
+                                  console.log('spawn R ',did)
                                   return spawnR(task,done)
                               })
                     return null
@@ -233,7 +236,7 @@ function spawnR(task,done){
     trigger_R_date = new Date()
 
     var file = task.file
-    console.log('processing '+file)
+    console.log('processing '+file+' in R')
     // trigger the file loop callback
     if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
@@ -316,7 +319,7 @@ async.eachLimit(years_districts,1,function(opt,cb){
                                   ,'amelia':1}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
-                                      async.eachLimit(list,10
+                                      async.eachLimit(list,5
                                                 ,handler
                                                 ,cb);
                                       return null
