@@ -65,16 +65,28 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   ######################
   bigdata <- data.frame()
   wim.ids <- get.list.neighbor.wim.sites(vdsid)
+
+  couch.set.state(year,vds.id,list('wim_neighbors'=wim.ids))
+
+  ready.wimids = list()
+
   for( wii in 1:length(wim.ids$wim_id) ){
     wim.id <- wim.ids[wii,'wim_id']
     wim.dir <- wim.ids[wii,'direction']
     paired.vdsids <- wim.vds.pairs[wim.vds.pairs$wim_id==wim.id  & wim.vds.pairs$direction==wim.dir,'vds_id']
+
     for(paired.vdsid in paired.vdsids){
       paired.RData <- get.RData.view(paired.vdsid,year)
       if(length(paired.RData)==0) { next }
       result <- couch.get.attachment(trackingdb,paired.vdsid,paired.RData)
       load(result)
       df.merged <- tempfix.borkborkbork(df.merged)
+      if(dim(df.merged)[1] < 100){
+        print(paste('pairing for',paired.vdsid,year,'pretty empty'))
+        next
+      }
+      print('processing',paired.vdsid,year)
+      ready.wimids[length(ready.wimids)+1]=wim.ids[wii]
       ## convention over configuration I guess.  These files are always called df.merged
       ic.names <- names(df.merged)
       keep.columns = intersect(c( "ts","tod","day","imp","vds_id" ),ic.names)
@@ -108,9 +120,13 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
     }
   }
 
+  if(length(ready.wimids)>0){
+    couch.set.state(year,vds.id,list('wim_neighbors_ready'=ready.wimids))
+  }
   print('concatenating merged and to-do data sets')
   if(dim(bigdata)[1] < 100){
     print('bigdata looking pretty empty')
+    couch.set.state(year,vds.id,list('truck_imputation_failed'=paste(dim(bigdata)[1], 'records in wim neighbor sites')))
     stop()
   }
   ## bigdata <- concatenate.two.sites(bigdata,aout.agg,maximp=keepimp)
@@ -211,7 +227,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   ## while that runs, make some plots
   df.amelia.c$vds_id <- NULL
   ## generate a df for plots.  Use median here, because that is what I will do with final output
-  
+
   df.amelia.zoo <- medianed.aggregate.df(df.amelia.c)
   df.med <- unzoo.incantation(df.amelia.zoo)
   rm(df.amelia.zoo)
@@ -223,7 +239,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
 
   make.truck.plots.by.lane(df.amelia.c.l,year,vdsid,'vds',vdsid,imputed=TRUE)
   quit(save='no',status=10)
-  
+
 }
 
 
@@ -257,4 +273,3 @@ vds.id <-  get.vdsid.from.filename(fname)
 
 
 impute.vds.site(vds.id,year,vdsfile=vdsfile,district=district)
-
