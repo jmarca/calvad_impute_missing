@@ -48,10 +48,23 @@ var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 var couch_set   = require('couch_set_state')
 
+var pg = require('pg')
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
 
+//psql
+var host = options.host ? options.host : '127.0.0.1';
+var user = options.username ? options.username : 'myname';
+var pass = options.password ? options.password : 'secret';
+var port = options.port ? options.port :  5432;
+var area_param = options.area_param ? options.area_param : 'areaid';
+var area_type = options.area_type ? options.area_type : 'area';
+
+var spatialvdsConnectionString = "pg://"+user+":"+pass+"@"+host+":"+port+"/spatialvds";
+
+var neighborquery = 'select distinct site_no, direction from imputed.vds_wim_neighbors where vds_id='
 
 var finish_regex = /finish/;
 var date=new Date()
@@ -119,6 +132,36 @@ function vdsfile_handler(opt){
                                           console.log(did +' no vds imputation')
                                           return done('quit')
                                       })
+                          return null
+                      }
+                     ,function(done){
+                          // verify that there are neighbors to work with
+                          var queryHandler = function(err,client){
+                              if(err) throw new Error(err)
+                              var neighbors = []
+                              var query = client.query(neighborquery+'did')
+                              query.on('error',function(err){
+                                  throw new Error(err)
+                              })
+                              query.on('row', function(row) {
+                                  //fired once for each row returned
+                                  neighbors.push(row);
+                              });
+                              query.on('end',function(result){
+                                  couch_set({'db':statedb
+                                            ,'doc':did
+                                            ,'year':opts.env['RYEAR']
+                                            ,'state':'wim_neighbors'
+                                            ,'value':neighbors}
+                                           ,function(){})
+                                  if(result.rowCount<1){
+                                      console.log('no neighbor WIM sites')
+                                      return done('quit')
+                                  }
+                                  return done()
+                              })
+                          }
+                          pg.connect(spatialvdsConnectionString, queryHandler);
                           return null
                       }]
                     ,function(err){

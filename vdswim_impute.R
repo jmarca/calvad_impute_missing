@@ -44,7 +44,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   ## load the vds data
   df.vds.zoo <- get.zooed.vds.amelia(vdsid,serverfile=vdsfile,path=district)
   if(is.null(df.vds.zoo)){
-    exit(0)
+    stop()
   }
 
   ## standard unzoo incantation
@@ -66,7 +66,9 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   bigdata <- data.frame()
   wim.ids <- get.list.neighbor.wim.sites(vdsid)
 
-  couch.set.state(year,vds.id,list('wim_neighbors'=wim.ids))
+  print('wim.ids dimensions are ',dim(wim.ids))
+  print(wim.ids)
+  ##couch.set.state(year,vds.id,list('wim_neighbors'=wim.ids))
 
   ready.wimids = list()
 
