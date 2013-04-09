@@ -48,15 +48,29 @@ var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 var couch_set   = require('couch_set_state')
 
+var pg = require('pg')
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
 
+//psql
+var env = process.env
+var jobs = env.NUM_R_JOBS || 2
+
+var puser = env.PSQL_USER
+var ppass = env.PSQL_PASS
+var phost = env.PSQL_HOST || '127.0.0.1'
+var pport = env.PSQL_PORT || 5432
+
+var spatialvdsConnectionString = "pg://"+puser+":"+ppass+"@"+phost+":"+pport+"/spatialvds";
+
+var neighborquery = 'select distinct site_no, direction from imputed.vds_wim_neighbors where vds_id='
 
 var finish_regex = /finish/;
 var date=new Date()
-var inprocess_string = process.env.INPROCESS_STRING || date.toISOString()+' inprocess'
-var finish_string = process.env.FINISH_STRING || date.toISOString()+' finish'
+var inprocess_string = env.INPROCESS_STRING || date.toISOString()+' inprocess'
+var finish_string = env.FINISH_STRING || date.toISOString()+' finish'
 
 /**
  * refactor items
@@ -120,6 +134,40 @@ function vdsfile_handler(opt){
                                           return done('quit')
                                       })
                           return null
+                      }
+                     ,function(done){
+                          // verify that there are neighbors to work with
+                          var queryHandler = function(err,client,pgdone){
+                              if(err) throw new Error(err)
+                              var neighbors = []
+                              var query = client.query(neighborquery+did)
+                              query.on('error',function(err){
+                                  throw new Error(err)
+                              })
+                              query.on('row', function(row) {
+                                  //fired once for each row returned
+                                  neighbors.push(row);
+                              });
+                              query.on('end',function(result){
+                                  pgdone()
+                                  couch_set({'db':statedb
+                                            ,'doc':did
+                                            ,'year':opts.env['RYEAR']
+                                            ,'state':'wim_neighbors'
+                                            ,'value':neighbors}
+                                           ,function(e){
+                                                if(e) throw new Error(e)
+                                                if(neighbors.length<1){
+                                                    console.log(did +' no neighbor WIM sites')
+                                                    return done('quit')
+                                                }
+                                                return done()
+                                            })
+                                  return null
+                              })
+                          }
+                          pg.connect(spatialvdsConnectionString, queryHandler);
+                          return null
                       }]
                     ,function(err){
                          if(err){
@@ -127,6 +175,7 @@ function vdsfile_handler(opt){
                                  return cb()
                              return cb(err)
                          }
+                         console.log(did +' pushing to process in R')
                          file_queue.push({'file':f
                                          ,'opts':opt
                                          ,'cb':cb})
@@ -142,16 +191,18 @@ var setup_R_job = function(task,done){
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts,true)
     // need to check again that truck vols have not yet been imputed
+    console.log('checking ',did)
     couch_check({'db':statedb
                 ,'doc':did
                 ,'year':opts.env['RYEAR']
                 ,'state':'truckimputed'
                 }
                ,function(err,state){
-                    if(err) return done(err)
+                    if(err) throw new Error(err)
                     if(state && (finish_regex.test(state)) || state === inprocess_string){
                         return done()
                     }
+                    console.log('checking out ',did)
                     // check out for processing
                     couch_set({'db':statedb
                               ,'doc':did
@@ -160,7 +211,8 @@ var setup_R_job = function(task,done){
                               ,'value':inprocess_string
                               }
                              ,function(err){
-                                  if(err) return done(err)
+                                  if(err) throw new Error(err)
+                                  console.log('spawn R ',did)
                                   return spawnR(task,done)
                               })
                     return null
@@ -169,23 +221,10 @@ var setup_R_job = function(task,done){
 }
 
 
-var trigger_R_date = new Date()
-
-var trigger_R_job = function(task,done){
-    console.log('waiting to start '+task.file)
-    var new_R_date = new Date()
-    if(new_R_date - trigger_R_date > 10 * 1000) return spawnR(task,done)
-    setTimeout(function(){
-        trigger_R_job(task,done)
-    }, 5*1000);
-    return null
-}
-
 function spawnR(task,done){
-    trigger_R_date = new Date()
 
     var file = task.file
-    console.log('processing '+file)
+    console.log('processing '+file+' in R')
     // trigger the file loop callback
     if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
@@ -223,13 +262,14 @@ function spawnR(task,done){
         return null
     })
 }
-var jobs = process.env.NUM_R_JOBS || 2
+
 var file_queue=async.queue(setup_R_job,jobs)
+
 
 var years = [2007,2008,2009,2010] // 2011
 
-var districts = ['D03'
-                ,'D04'
+var districts = ['D04'
+                ,'D03'
                 ,'D08'
                 ,'D12'
                 ,'D05'
@@ -267,7 +307,7 @@ async.eachLimit(years_districts,1,function(opt,cb){
                                   ,'amelia':1}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
-                                      async.each(list
+                                      async.eachLimit(list,5
                                                 ,handler
                                                 ,cb);
                                       return null
