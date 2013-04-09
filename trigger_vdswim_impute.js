@@ -55,21 +55,22 @@ var statedb = 'vdsdata%2ftracking'
 var R;
 
 //psql
-var host = options.host ? options.host : '127.0.0.1';
-var user = options.username ? options.username : 'myname';
-var pass = options.password ? options.password : 'secret';
-var port = options.port ? options.port :  5432;
-var area_param = options.area_param ? options.area_param : 'areaid';
-var area_type = options.area_type ? options.area_type : 'area';
+var env = process.env
+var jobs = env.NUM_R_JOBS || 2
 
-var spatialvdsConnectionString = "pg://"+user+":"+pass+"@"+host+":"+port+"/spatialvds";
+var puser = env.PSQL_USER
+var ppass = env.PSQL_PASS
+var phost = env.PSQL_HOST || '127.0.0.1'
+var pport = env.PSQL_PORT || 5432
+
+var spatialvdsConnectionString = "pg://"+puser+":"+ppass+"@"+phost+":"+pport+"/spatialvds";
 
 var neighborquery = 'select distinct site_no, direction from imputed.vds_wim_neighbors where vds_id='
 
 var finish_regex = /finish/;
 var date=new Date()
-var inprocess_string = process.env.INPROCESS_STRING || date.toISOString()+' inprocess'
-var finish_string = process.env.FINISH_STRING || date.toISOString()+' finish'
+var inprocess_string = env.INPROCESS_STRING || date.toISOString()+' inprocess'
+var finish_string = env.FINISH_STRING || date.toISOString()+' finish'
 
 /**
  * refactor items
@@ -136,10 +137,10 @@ function vdsfile_handler(opt){
                       }
                      ,function(done){
                           // verify that there are neighbors to work with
-                          var queryHandler = function(err,client){
+                          var queryHandler = function(err,client,pgdone){
                               if(err) throw new Error(err)
                               var neighbors = []
-                              var query = client.query(neighborquery+'did')
+                              var query = client.query(neighborquery+did)
                               query.on('error',function(err){
                                   throw new Error(err)
                               })
@@ -148,14 +149,17 @@ function vdsfile_handler(opt){
                                   neighbors.push(row);
                               });
                               query.on('end',function(result){
+                                  pgdone()
                                   couch_set({'db':statedb
                                             ,'doc':did
                                             ,'year':opts.env['RYEAR']
                                             ,'state':'wim_neighbors'
                                             ,'value':neighbors}
-                                           ,function(){})
-                                  if(result.rowCount<1){
-                                      console.log('no neighbor WIM sites')
+                                           ,function(e){
+                                                if(e) throw new Error(e)
+                                            })
+                                  if(neighbors.length<1){
+                                      console.log(did +' no neighbor WIM sites')
                                       return done('quit')
                                   }
                                   return done()
@@ -170,6 +174,7 @@ function vdsfile_handler(opt){
                                  return cb()
                              return cb(err)
                          }
+                         console.log(did +' pushing to process in R')
                          file_queue.push({'file':f
                                          ,'opts':opt
                                          ,'cb':cb})
@@ -266,13 +271,14 @@ function spawnR(task,done){
         return null
     })
 }
-var jobs = process.env.NUM_R_JOBS || 2
+
 var file_queue=async.queue(setup_R_job,jobs)
+
 
 var years = [2007,2008,2009,2010] // 2011
 
-var districts = ['D03'
-                ,'D04'
+var districts = ['D04'
+                ,'D03'
                 ,'D08'
                 ,'D12'
                 ,'D05'
@@ -310,7 +316,7 @@ async.eachLimit(years_districts,1,function(opt,cb){
                                   ,'amelia':1}
                                  ,function(err,list){
                                       if(err) throw new Error(err)
-                                      async.each(list
+                                      async.eachLimit(list,10
                                                 ,handler
                                                 ,cb);
                                       return null
