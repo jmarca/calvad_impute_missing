@@ -157,12 +157,13 @@ function vdsfile_handler(opt){
                                             ,'value':neighbors}
                                            ,function(e){
                                                 if(e) throw new Error(e)
+                                                if(neighbors.length<1){
+                                                    console.log(did +' no neighbor WIM sites')
+                                                    return done('quit')
+                                                }
+                                                return done()
                                             })
-                                  if(neighbors.length<1){
-                                      console.log(did +' no neighbor WIM sites')
-                                      return done('quit')
-                                  }
-                                  return done()
+                                  return null
                               })
                           }
                           pg.connect(spatialvdsConnectionString, queryHandler);
@@ -220,20 +221,7 @@ var setup_R_job = function(task,done){
 }
 
 
-var trigger_R_date = new Date()
-
-var trigger_R_job = function(task,done){
-    console.log('waiting to start '+task.file)
-    var new_R_date = new Date()
-    if(new_R_date - trigger_R_date > 10 * 1000) return spawnR(task,done)
-    setTimeout(function(){
-        trigger_R_job(task,done)
-    }, 5*1000);
-    return null
-}
-
 function spawnR(task,done){
-    trigger_R_date = new Date()
 
     var file = task.file
     console.log('processing '+file+' in R')
