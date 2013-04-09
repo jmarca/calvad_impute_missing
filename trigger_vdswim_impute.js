@@ -120,24 +120,6 @@ function vdsfile_handler(opt){
                                           return done('quit')
                                       })
                           return null
-                      }
-                     ,function(done){
-                          // need to verify that the vds site has WIM neighbors
-                          couch_check({'db':statedb
-                                      ,'doc':did
-                                      ,'year':opt.env['RYEAR']
-                                      ,'state':'wim_neigbors'
-                                      }
-                                     ,function(err,state){
-                                          if(err) throw new Error(err)
-                                          if(state && _.isArray(state) && state.length>0){
-                                              // the raw data is okay to proceed
-                                              return done()
-                                          }
-                                          console.log(did +' no wim neighbors')
-                                          return done('quit')
-                                      })
-                          return null
                       }]
                     ,function(err){
                          if(err){
@@ -246,13 +228,13 @@ var file_queue=async.queue(setup_R_job,jobs)
 
 var years = [2007,2008,2009,2010] // 2011
 
-var districts = ['D04'
+var districts = ['D03'
+                ,'D04'
                 ,'D08'
                 ,'D12'
                 ,'D05'
                 ,'D06'
                 ,'D07'
-                ,'D03'
                 ,'D11'
                 ,'D10'
                 ]
