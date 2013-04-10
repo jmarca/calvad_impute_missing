@@ -88,10 +88,12 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
     ## make sure that there are the *correct* nubmer of variables
     ## there should be 14 for each lane, and then 4 for the left
     ## lane, if there are more than two lanes, then 3 for time variables
-    shouldbe <- (wim.lanes-1)*14 + 4 + 3
-    if(wim.lanes < 3){
-      shouldbe<- wim.lanes*14 + 3
-    }
+    shouldbe <-
+      (wim.lanes * 2) + ## n and o for each lane
+        (2 * 10) +  ## two right hand lanes should have 10 truck vars
+          (wim.lanes * 2) + ## each lane has speed and count from summary report
+            3 ## ts, tod, day
+
     paired.vdsids <- wim.vds.pairs[wim.vds.pairs$wim_id==wim.id  & wim.vds.pairs$direction==wim.dir,'vds_id']
 
     for(paired.vdsid in paired.vdsids){
@@ -105,7 +107,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
         next
       }
       if(dim(df.merged)[2]<shouldbe){
-        print(paste('pairing for',paired.vdsid,year,'missing some variables'))
+        print(paste('pairing for',paired.vdsid,year,'missing some variables, expected',shouldbe,'got',dim(df.merged)[2]))
         print(names(df.merged))
         next
       }
