@@ -59,22 +59,39 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   vds.names <- names(df.vds)
   vds.nvars <- grep( pattern="^n(l|r)\\d+",x=vds.names,perl=TRUE,value=TRUE)
 
-
+  lanes = length(vds.nvars)
   #####################
   ## loading WIM data paired with VDS data from WIM neighbor sites
   ######################
   bigdata <- data.frame()
   wim.ids <- get.list.neighbor.wim.sites(vdsid)
-
-  print('wim.ids dimensions are ',dim(wim.ids))
-  print(wim.ids)
-  ##couch.set.state(year,vds.id,list('wim_neighbors'=wim.ids))
-
+  if(length(wim.ids)<1){
+    print('no wim neighbors in database')
+    couch.set.state(year,vds.id,list('truck_imputation_failed'='0 records in wim neighbor table'))
+    stop()
+  }
+  ## keep either the max number of lanes group, or all sites that have
+  ## more or equal to number of lanes
+  more.lanes <- wim.ids$lanes >= lanes
+  if(length(wim.ids[more.lanes,1])<1){
+    ## then just use the max lanes group
+    maxlanes = wim.ids$lanes[1]
+    more.lanes <- wim.ids$lanes >= maxlanes
+  }
+  wim.ids <- wim.ids[more.lanes,]
   ready.wimids = list()
 
   for( wii in 1:length(wim.ids$wim_id) ){
     wim.id <- wim.ids[wii,'wim_id']
     wim.dir <- wim.ids[wii,'direction']
+    wim.lanes <- wim.ids[wii,'lanes']
+    ## make sure that there are the *correct* nubmer of variables
+    ## there should be 14 for each lane, and then 4 for the left
+    ## lane, if there are more than two lanes, then 3 for time variables
+    shouldbe <- (wim.lanes-1)*14 + 4 + 3
+    if(wim.lanes < 3){
+      shouldbe<- wim.lanes*14 + 3
+    }
     paired.vdsids <- wim.vds.pairs[wim.vds.pairs$wim_id==wim.id  & wim.vds.pairs$direction==wim.dir,'vds_id']
 
     for(paired.vdsid in paired.vdsids){
@@ -87,8 +104,13 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
         print(paste('pairing for',paired.vdsid,year,'pretty empty'))
         next
       }
+      if(dim(df.merged)[2]<shouldbe){
+        print(paste('pairing for',paired.vdsid,year,'missing some variables'))
+        print(names(df.merged))
+        next
+      }
       print(paste('processing',paired.vdsid,year))
-      ready.wimids[length(ready.wimids)+1]=wim.ids[wii]
+      ready.wimids[length(ready.wimids)+1]=wim.ids[wii,]
       ## convention over configuration I guess.  These files are always called df.merged
       ic.names <- names(df.merged)
       keep.columns = intersect(c( "ts","tod","day","imp","vds_id" ),ic.names)
