@@ -147,6 +147,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   }
 
   if(length(ready.wimids)>0){
+    ready.wimids <- unique(ready.wimids)
     couch.set.state(year,vds.id,list('wim_neighbors_ready'=ready.wimids))
   }
   print('concatenating merged and to-do data sets')

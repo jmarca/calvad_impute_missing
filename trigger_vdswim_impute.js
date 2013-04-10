@@ -252,8 +252,18 @@ function spawnR(task,done){
                               }
                              ,function(err){
                                   if(err) throw new Error(err)
-                                  //throw new Error('die in testing')
-                                  return done()
+                                  // clean up past failure state
+                                  couch_set({'db':statedb
+                                            ,'doc':did
+                                            ,'year':opts.env['RYEAR']
+                                            ,'state':'truck_imputation_failed'
+                                            ,'value':null
+                                            }
+                                           ,function(err){
+                                                if(err) throw new Error(err)
+                                                //throw new Error('die in testing')
+                                                return done()
+                                            })
                               })
         }else{
             //throw new Error('die in testing')
