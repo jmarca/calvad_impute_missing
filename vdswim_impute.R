@@ -107,7 +107,8 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
       paired.RData <- get.RData.view(paired.vdsid,year)
       if(length(paired.RData)==0) { next }
       result <- couch.get.attachment(trackingdb,paired.vdsid,paired.RData,local=localcouch)
-      load(result)
+      ## load(result)
+      ## loading now happens in couch.get.attachment
       df.merged <- tempfix.borkborkbork(df.merged)
       if(dim(df.merged)[1] < 100){
         print(paste('pairing for',paired.vdsid,year,'pretty empty'))
