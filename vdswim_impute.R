@@ -87,6 +87,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   }
   wim.ids <- wim.ids[more.lanes,]
   ready.wimids = list()
+  spd.pattern <- "(^sl1$|^sr\\d$)"
 
   for( wii in 1:length(wim.ids$wim_id) ){
     wim.id <- wim.ids[wii,'wim_id']
@@ -95,11 +96,6 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
     ## make sure that there are the *correct* nubmer of variables
     ## there should be 14 for each lane, and then 4 for the left
     ## lane, if there are more than two lanes, then 3 for time variables
-    shouldbe <-
-      (wim.lanes * 2) + ## n and o for each lane
-        (2 * 10) +  ## two right hand lanes should have 10 truck vars
-          (wim.lanes * 2) + ## each lane has speed and count from summary report
-            3 ## ts, tod, day
 
     paired.vdsids <- wim.vds.pairs[wim.vds.pairs$wim_id==wim.id  & wim.vds.pairs$direction==wim.dir,'vds_id']
 
@@ -114,6 +110,18 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
         print(paste('pairing for',paired.vdsid,year,'pretty empty'))
         next
       }
+      ic.names <- names(df.merged)
+      shouldbe <-
+        (wim.lanes * 2) + ## n and o for each lane
+          (2 * 10) +  ## two right hand lanes should have 10 truck vars
+            (wim.lanes * 2) + ## each lane has speed and count from summary report
+              3 ## ts, tod, day
+      ## add for speed too if in the data set
+      speed.vars <- grep( pattern=spd.pattern,x=ic.names ,perl=TRUE,value=TRUE,invert=FALSE)
+      if(length(speed.vars)>0){
+        shouldbe <- shouldbe + (wim.lanes) # one speed measurement for each lane
+      }
+
       if(dim(df.merged)[2]<shouldbe){
         print(paste('pairing for',paired.vdsid,year,'missing some variables, expected',shouldbe,'got',dim(df.merged)[2]))
         print(names(df.merged))
@@ -122,7 +130,6 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
       print(paste('processing',paired.vdsid,year))
       ready.wimids[length(ready.wimids)+1]=wim.ids[wii,]
       ## convention over configuration I guess.  These files are always called df.merged
-      ic.names <- names(df.merged)
       keep.columns = intersect(c( "ts","tod","day","imp","vds_id" ),ic.names)
       ## use vds.nvars to drop unwanted lanes
       for( lane in 1:length(vds.nvars) ){
