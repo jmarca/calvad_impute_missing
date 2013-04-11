@@ -35,6 +35,13 @@ con <-  dbConnect(m
                   ,dbname="spatialvds")
 
 
+localcouch = Sys.getenv(c('RLOCALCOUCH'))[1]
+if(is.null(localcouch)){
+  localcouch = FALSE
+  exit(1)
+}else{
+  localcouch = TRUE
+}
 
 ## pass in the vdsid and the year
 
@@ -67,7 +74,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   wim.ids <- get.list.neighbor.wim.sites(vdsid)
   if(length(wim.ids)<1){
     print('no wim neighbors in database')
-    couch.set.state(year,vds.id,list('truck_imputation_failed'='0 records in wim neighbor table'))
+    couch.set.state(year,vds.id,list('truck_imputation_failed'='0 records in wim neighbor table'),local=localcouch)
     stop()
   }
   ## keep either the max number of lanes group, or all sites that have
@@ -99,7 +106,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
     for(paired.vdsid in paired.vdsids){
       paired.RData <- get.RData.view(paired.vdsid,year)
       if(length(paired.RData)==0) { next }
-      result <- couch.get.attachment(trackingdb,paired.vdsid,paired.RData)
+      result <- couch.get.attachment(trackingdb,paired.vdsid,paired.RData,local=localcouch)
       load(result)
       df.merged <- tempfix.borkborkbork(df.merged)
       if(dim(df.merged)[1] < 100){
@@ -148,12 +155,12 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
 
   if(length(ready.wimids)>0){
     ready.wimids <- unique(ready.wimids)
-    couch.set.state(year,vds.id,list('wim_neighbors_ready'=ready.wimids))
+    couch.set.state(year,vds.id,list('wim_neighbors_ready'=ready.wimids),local=localcouch)
   }
   print('concatenating merged and to-do data sets')
   if(dim(bigdata)[1] < 100){
     print('bigdata looking pretty empty')
-    couch.set.state(year,vds.id,list('truck_imputation_failed'=paste(dim(bigdata)[1], 'records in wim neighbor sites')))
+    couch.set.state(year,vds.id,list('truck_imputation_failed'=paste(dim(bigdata)[1], 'records in wim neighbor sites')),local=localcouch)
     stop()
   }
   ## bigdata <- concatenate.two.sites(bigdata,aout.agg,maximp=keepimp)
