@@ -156,18 +156,35 @@ function vdsfile_handler(opt){
                                             ,'state':'wim_neighbors'
                                             ,'value':neighbors}
                                            ,function(e){
-                                                if(e) throw new Error(e)
-                                                if(neighbors.length<1){
-                                                    console.log(did +' no neighbor WIM sites')
-                                                    return done('quit')
+                                                if(e){
+                                                    // try one more time
+                                                    couch_set({'db':statedb
+                                                              ,'doc':did
+                                                              ,'year':opts.env['RYEAR']
+                                                              ,'state':'wim_neighbors'
+                                                              ,'value':neighbors}
+                                                             ,function(e){
+                                                                  if(e) throw new Error(e)
+                                                                  if(neighbors.length<1){
+                                                                      console.log(did +' no neighbor WIM sites')
+                                                                      return done('quit')
+                                                                  }
+                                                                  return done()
+                                                              })
+                                                    return null
+                                                }else{
+                                                    if(neighbors.length<1){
+                                                        console.log(did +' no neighbor WIM sites')
+                                                        return done('quit')
+                                                    }
+                                                    return done()
                                                 }
-                                                return done()
                                             })
                                   return null
                               })
                           }
                           pg.connect(spatialvdsConnectionString, queryHandler);
-                          return null
+                                       return null
                       }]
                     ,function(err){
                          if(err){
@@ -276,7 +293,7 @@ function spawnR(task,done){
 var file_queue=async.queue(setup_R_job,jobs)
 
 
-var years = [2007,2008,2009,2010] // 2011
+var years = [2008,2009,2007]//,2010] // 2011
 
 var districts = ['D04'
                 ,'D03'
@@ -299,10 +316,12 @@ var opts = { cwd: undefined,
 var years_districts = []
 _.each(years,function(year){
     _.each(districts,function(district){
+        if(year==2008 && !(district=='D11' ||district=='D10') ) return null
         var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
         years_districts.push(o)
+        return null
     })
 });
 
