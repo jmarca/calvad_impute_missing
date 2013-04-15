@@ -75,7 +75,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
 
   ## iterate a bit here
   if(dim(bigdata)[1] < 100){
-    while(dim(bigdata)[1] < 100 {
+    while(dim(bigdata)[1] < 100 ){
       print('loop')
       more.lanes <- wim.ids$lanes == wim.ids$lanes[1]
       ## drop to the next lane size
