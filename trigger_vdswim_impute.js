@@ -293,16 +293,16 @@ function spawnR(task,done){
 var file_queue=async.queue(setup_R_job,jobs)
 
 
-var years = [2008,2009,2007]//,2010] // 2011
+var years = [2007,2008,2009]//,2010] // 2011
 
-var districts = ['D04'
+var districts = ['D11'
+                ,'D04'
                 ,'D03'
                 ,'D08'
                 ,'D12'
                 ,'D05'
                 ,'D06'
                 ,'D07'
-                ,'D11'
                 ,'D10'
                 ]
 
@@ -316,7 +316,7 @@ var opts = { cwd: undefined,
 var years_districts = []
 _.each(years,function(year){
     _.each(districts,function(district){
-        if(year==2008 && !(district=='D11' ||district=='D10') ) return null
+        //if(year==2008 && !(district=='D11' ||district=='D10') ) return null
         var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
