@@ -9,6 +9,8 @@ var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
+var num_CPUs = require('os').cpus().length;
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
@@ -76,19 +78,18 @@ var trigger_R_job = function(task,done){
     })
 }
 
-var file_queue=async.queue(trigger_R_job,2)
+var file_queue=async.queue(trigger_R_job,num_CPUs
+var years = [2010,2011];
 
-var years = [2007,2008,2009,2010,2011];
-
-var districts = ['D04'
-                ,'D08'
-                ,'D12'
+var districts = ['D03'
+                ,'D04'
                 ,'D05'
                 ,'D06'
                 ,'D07'
-                ,'D03'
-                ,'D11'
+                ,'D08'
                 ,'D10'
+                ,'D11'
+                ,'D12'
                 ]
 
 
