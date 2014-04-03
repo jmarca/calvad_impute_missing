@@ -23,7 +23,7 @@ describe('get vds files',function(){
                                              list.should.have.property('length',10)
                                              _.each(list
                                                    ,function(f){
-                                                        f.should.match(/\.txt\.gz$/);
+                                                        f.should.match(/\.txt\..z$/);
                                                     })
                                              return done()
                                          })
@@ -64,24 +64,24 @@ describe('get vds files',function(){
        })
 })
 describe('get vds files local',function(){
-    it('should get txt files in 2007, D05'
+    it('should get txt files in 2010, D05'
       ,function(done){
            get_files.get_yearly_vdsfiles_local({'district':'D05'
-                                               ,'year':2007}
+                                               ,'year':2010}
                                               ,function(err,list){
                                                    should.not.exist(err)
                                                    //console.log(list)
                                                    list.should.have.property('length',10)
                                                    _.each(list
                                                          ,function(f){
-                                                              f.should.match(/\.txt\.gz$/);
+                                                              f.should.match(/\.txt\.?.z$/);
                                                           })
                                                        return done()
                                                })
        })
     it('should get rdata files in 2007, D05'
       ,function(done){
-           var yr = 2007
+           var yr = 2010
            get_files.get_yearly_vdsfiles_local({'district':'D05'
                                                ,'year':yr
                                                ,'rdata':1}
