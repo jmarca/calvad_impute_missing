@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "keywords": ["calvad", "R", "rstats"],
   "dependencies": {
-    "jmarca/calvad_rscripts":"*",
+    "jmarca/calvad_rscripts":"refactor/freshlook",
     "jmarca/rstats_couch_utils":"*",
     "jmarca/rstats_remote_files":"*"
   },

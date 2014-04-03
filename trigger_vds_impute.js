@@ -97,6 +97,8 @@ var districts = ['D03'
                 ,'D12'
                 ]
 
+// debugging
+districts=['D05']
 
 var RCall = ['--no-restore','--no-save','vds_impute.R']
 
@@ -114,10 +116,8 @@ _.each(years,function(year){
     })
 });
 
-// debugging, just do one combo for now
- years_districts=[years_districts[0]]
 
-async.series(years_districts
+async.eachSeries(years_districts
             ,function(opt,ydcb){
                  // get the files, load the queue
                  var handler = vdsfile_handler(opt)
@@ -127,7 +127,7 @@ async.series(years_districts
                                                     ,function(err,list){
                                                          if(err) throw new Error(err)
                                                          console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-                                                         async.series(list
+                                                         async.eachSeries(list
                                                                      ,handler
                                                                      ,ydcb);
                                                          return null
