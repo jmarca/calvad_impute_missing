@@ -59,10 +59,12 @@ file.names <- strsplit(file,split="/")
 file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
 vds.id <-  get.vdsid.from.filename(fname)
-path = paste('/data/pems/breakup/',district,sep='')
+pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
+path = paste(pems.root,district,sep='')
 goodfactor <-   3.5
 seconds = 60
 file <- paste(path,file,sep='/')
+print(file)
 done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=60,goodfactor=goodfactor)
 if (done != 1){
   couch.set.state(year,vds.id,list('vdsraw_chain_lengths'=done))
