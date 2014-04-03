@@ -26,37 +26,9 @@ var R;
  *
  */
 
-function vdsfile_handler(opt){
-    return function(f,cb){
-        var did = suss_detector_id(f)
-
-        couch_check({'db':statedb
-                    ,'doc':did
-                    ,'year':opt.env['RYEAR']
-                    ,'state':'vdsraw_chain_lengths'
-                    }
-                   ,function(err,state){
-                        if(err) return cb(err)
-                        console.log({file:f,state:state})
-                        if( !state || !_.isArray(state) ){
-                            console.log('push to queue')
-                            file_queue.push({'file':f
-                                            ,'opts':opt
-                                            ,'cb':cb})
-                            return null
-                        }
-                        return cb(err)
-                    });
-        return null
-    }
-}
-
-
 var trigger_R_job = function(task,done){
     var file = task.file
     console.log('processing '+file)
-    // trigger the file loop callback
-    if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
@@ -77,9 +49,42 @@ var trigger_R_job = function(task,done){
         return done()
     })
 }
+var file_queue=async.queue(trigger_R_job,num_CPUs)
+file_queue.drain =function(){
+    console.log('queue drained')
+    return null
+}
 
-var file_queue=async.queue(trigger_R_job,num_CPUs
-var years = [2010,2011];
+function vdsfile_handler(opt){
+    return function(f,cb){
+        var did = suss_detector_id(f)
+
+        couch_check({'db':statedb
+                    ,'doc':did
+                    ,'year':opt.env['RYEAR']
+                    ,'state':'vdsraw_chain_lengths'
+                    }
+                   ,function(err,state){
+                        if(err) return cb(err)
+                        console.log({file:f,state:state})
+                        if( !state || !_.isArray(state) ){
+                            console.log('push to queue')
+                            file_queue.push({'file':f
+                                            ,'opts':opt
+                                            }
+                                           ,function(){
+                                                console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
+                                                return null
+                                            })
+                        }
+                        return cb()
+                    });
+        return null
+    }
+}
+
+
+var years = [2010]//,2011];
 
 var districts = ['D03'
                 ,'D04'
@@ -110,21 +115,26 @@ _.each(years,function(year){
 });
 
 // debugging, just do one combo for now
-// years_districts=[years_districts[0]]
-async.eachLimit(years_districts,1,function(opt,cb){
-    // get the files
-    var handler = vdsfile_handler(opt)
-    console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
-                                        ,year:opt.env['RYEAR']}
-                                       ,function(err,list){
-                                            if(err) throw new Error(err)
-                                            async.forEach(list
-                                                         ,handler
-                                                         ,cb);
-                                            return null
-                                        });
-});
+ years_districts=[years_districts[0]]
+
+async.series(years_districts
+            ,function(opt,ydcb){
+                 // get the files, load the queue
+                 var handler = vdsfile_handler(opt)
+                 console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
+                 get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
+                                                     ,year:opt.env['RYEAR']}
+                                                    ,function(err,list){
+                                                         if(err) throw new Error(err)
+                                                         console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
+                                                         async.series(list
+                                                                     ,handler
+                                                                     ,ydcb);
+                                                         return null
+                                                     });
+
+             });
+
 
 
 
