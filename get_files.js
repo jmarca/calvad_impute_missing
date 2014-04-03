@@ -5,7 +5,7 @@ var fileserver = port === 80 ? server : server +':'+port
 var path = require('path')
 var glob = require('glob')
 
-var pems_root = '/data/pems/breakup/'
+var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
 function get_yearly_vdsfiles_local(opts,cb){
     if(opts.year === undefined) throw Error('need year in opts')
