@@ -98,7 +98,7 @@ var districts = ['D03'
                 ]
 
 // debugging
-districts=['D05']
+districts=['D06']
 
 var RCall = ['--no-restore','--no-save','vds_impute.R']
 

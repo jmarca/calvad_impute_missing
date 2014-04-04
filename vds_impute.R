@@ -11,12 +11,12 @@ library('RCurl')
 library('RJSONIO')
 
 ## source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
-source('components/jmarca/rstats_couch_utils/couchUtils.R')
+source('components/jmarca/rstats_couch_utils/master/couchUtils.R',chdir=TRUE)
 ##source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
 ## source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 ## source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
-source('components/jmarca/calvad_rscripts/lib/vds_impute.R')
+source('components/jmarca/calvad_rscripts/refactor/freshlook/lib/vds_impute.R',chdir=TRUE)
 
 library('RPostgreSQL')
 m <- dbDriver("PostgreSQL")
@@ -62,10 +62,10 @@ vds.id <-  get.vdsid.from.filename(fname)
 pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
 path = paste(pems.root,district,sep='')
 goodfactor <-   3.5
-seconds = 60
+seconds = 120
 file <- paste(path,file,sep='/')
 print(file)
-done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=60,goodfactor=goodfactor)
+done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor)
 if (done != 1){
   couch.set.state(year,vds.id,list('vdsraw_chain_lengths'=done))
 }
