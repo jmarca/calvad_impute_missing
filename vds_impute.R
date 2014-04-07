@@ -60,12 +60,16 @@ file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
 vds.id <-  get.vdsid.from.filename(fname)
 pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
+maxiter = Sys.getenv(c('CALVAD_VDS_IMPUTE_MAXITER'))[1]
+if(is.null(maxiter)){
+    maxiter=300
+}
 path = paste(pems.root,district,sep='')
 goodfactor <-   3.5
 seconds = 120
 file <- paste(path,file,sep='/')
 print(file)
-done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor)
+done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor,maxiter=maxiter)
 if (done != 1){
   couch.set.state(year,vds.id,list('vdsraw_chain_lengths'=done))
 }
