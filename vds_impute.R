@@ -69,7 +69,13 @@ goodfactor <-   3.5
 seconds = 120
 file <- paste(path,file,sep='/')
 print(file)
-done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor,maxiter=maxiter)
+## using maxiter must be a number, not string
+## so the env var is irritating.  Hard code at 20 for now
+
+## by the way, 20 is from examining the first 2000 or so imputations
+## and noticing that most are less than 20
+
+done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor,maxiter=20)
 if (done != 1){
   couch.set.state(year,vds.id,list('vdsraw_chain_lengths'=done))
 }
