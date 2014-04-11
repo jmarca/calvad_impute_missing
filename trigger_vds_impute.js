@@ -86,19 +86,20 @@ function vdsfile_handler(opt){
 
 var years = [2010]//,2011];
 
-var districts = ['D03'
-                ,'D04'
-                ,'D05'
-                ,'D06'
-                ,'D07'
+var districts = [//'D03'
+                //,'D04'
+    // did these during debugging
+                //,'D05'
+                //,'D06'
+                //,
+                'D07'
                 ,'D08'
                 ,'D10'
                 ,'D11'
                 ,'D12'
                 ]
 
-// debugging
-districts=['D06']
+
 
 var RCall = ['--no-restore','--no-save','vds_impute.R']
 

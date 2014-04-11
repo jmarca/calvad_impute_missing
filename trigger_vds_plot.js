@@ -9,6 +9,8 @@ var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
+var num_CPUs = require('os').cpus().length;
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
@@ -21,37 +23,9 @@ var R;
  *
  */
 
-function vdsfile_handler(opt){
-    return function(f,cb){
-        var did = suss_detector_id(f)
-
-        couch_check({'db':statedb
-                    ,'doc':did
-                    ,'year':'_attachments'
-                    ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-                    }
-                   ,function(err,state){
-                        if(err) return cb(err)
-                        console.log({file:f,state:state})
-                        if(!state){
-                            console.log('push to queue')
-                            file_queue.push({'file':f
-                                            ,'opts':opt
-                                            ,'cb':cb})
-                            return null
-                        }
-                        return cb(err)
-                    });
-        return null;
-    }
-}
-
-
 var trigger_R_job = function(task,done){
     var file = task.file
     console.log('processing '+file)
-    // trigger the file loop callback
-    if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
@@ -72,20 +46,52 @@ var trigger_R_job = function(task,done){
         return done()
     })
 }
+var file_queue=async.queue(trigger_R_job,num_CPUs)
+file_queue.drain =function(){
+    console.log('queue drained')
+    return null
+}
 
-var file_queue=async.queue(trigger_R_job,2)
+function vdsfile_handler(opt){
+    return function(f,cb){
+        var did = suss_detector_id(f)
 
-var years = [2007,2008,2009,2010,2011];
+        couch_check({'db':statedb
+                    ,'doc':did
+                    ,'year':'_attachments'
+                    ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
+                    }
+                   ,function(err,state){
+                        if(err) return cb(err)
+                        console.log({file:f,state:state})
+                        if(!state){
+                            console.log('push to queue')
+                            file_queue.push({'file':f
+                                            ,'opts':opt
+                                            }
+                                           ,function(){
+                                                console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
+                                                return null
+                                            })
+                        }
+                        return cb()
+                    });
+        return null
+    }
+}
 
-var districts = ['D04'
-                ,'D08'
-                ,'D12'
-                ,'D05'
-                ,'D06'
-                ,'D07'
-                ,'D03'
-                ,'D11'
-                ,'D10'
+
+var years = [2010];
+
+var districts = ['D03'
+                // ,'D04'
+                // ,'D05'
+                // ,'D06'
+                // ,'D07'
+                // ,'D08'
+                // ,'D10'
+                // ,'D11'
+                // ,'D12'
                 ]
 
 
@@ -106,24 +112,23 @@ _.each(years,function(year){
 });
 
 
-// debugging, just do one combo for now
-// years_districts=[years_districts[0]]
-async.eachLimit(years_districts,2,function(opt,cb){
-    // get the files
-    var handler = vdsfile_handler(opt)
-    console.log('checking '+opt.env['RDISTRICT']+' '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles({'district':opt.env['RDISTRICT']
-                                  ,'year':opt.env['RYEAR']
-                                  ,'rdata':1}
-                                 ,function(err,list){
-                                      if(err) throw new Error(err)
-                                      async.each(list
-                                                ,handler
-                                                ,cb);
-                                      return null
-                                  });
-});
-
-
+async.eachSeries(years_districts
+            ,function(opt,ydcb){
+                 // get the files
+                 var handler = vdsfile_handler(opt)
+                 console.log('checking '+opt.env['RDISTRICT']+' '+opt.env['RYEAR'])
+                 get_files.get_yearly_vdsfiles_local({'district':opt.env['RDISTRICT']
+                                                     ,'year':opt.env['RYEAR']
+                                                      //,'rdata':1
+                                                     }
+                                                    ,function(err,list){
+                                                         if(err) throw new Error(err)
+                                                         console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
+                                                         async.each(list
+                                                                   ,handler
+                                                                   ,ydcb);
+                                                         return null
+                                                     });
+             });
 
 1;
