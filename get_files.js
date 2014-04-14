@@ -13,7 +13,7 @@ function get_yearly_vdsfiles_local(opts,cb){
     var district = opts.district
     var pattern
     if(opts.rdata){
-        pattern = ["**/*ML_*df*",opts.year,"RData"].join('')
+        pattern = ["**/*ML_*df*",opts.year,"*RData"].join('')
     }else{
         pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
     }
