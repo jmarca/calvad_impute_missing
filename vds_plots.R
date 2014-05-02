@@ -13,12 +13,12 @@ library('RJSONIO')
 source('components/jmarca/rstats_couch_utils/master/couchUtils.R',chdir=TRUE)
 ##source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
-## source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
-## source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
+source('components/jmarca/calvad_rscripts/master/lib/get.medianed.amelia.vds.R',chdir=TRUE)
+source('components/jmarca/calvad_rscripts/master/lib/amelia_plots_and_diagnostics.R',chdir=TRUE)
+
 source('components/jmarca/calvad_rscripts/master/lib/vds_impute.R',chdir=TRUE)
 
-
-plot.raw.data <- function(fname,f,path,year,vds.id){
+plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE){
   ## plot the data out of the detector
   fileprefix='raw'
   subhead='raw data'
@@ -36,15 +36,17 @@ plot.raw.data <- function(fname,f,path,year,vds.id){
   df <- data.frame()
   ## df.pattern =paste('**/',fname,'*df*',year,'RData',sep='')
   ##rdata.file <- make.amelia.output.file(path,fname,seconds,year)
-
-  fetched <- fetch.remote.file(server,service='vdsdata',root=path,file=f)
-  r <- try(result <- load(file=fetched))
-  if(class(r) == "try-error") {
-    print (paste('need to get the raw file.  hold off for now'))
-    return (FALSE)
+  if(remote){
+      fetched <- fetch.remote.file(server,service='vdsdata',root=path,file=f)
+      r <- try(result <- load(file=fetched))
+      if(class(r) == "try-error") {
+          print (paste('need to get the raw file.  hold off for now'))
+          return (FALSE)
+      }
+      unlink(x=fetched)
+  }else{
+      df <- load.file(f,fname,year,path)
   }
-  unlink(x=fetched)
-
   ## break out ts
   ts <- df$ts
   df$ts <- NULL
@@ -85,17 +87,22 @@ if(is.null(year)){
 server <- "http://calvad.ctmlabs.net"
 vds.service <- 'vdsdata'
 
-district.path=paste(district,'/',sep='')
-
 file.names <- strsplit(thefile,split="/")
 file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
 
 vds.id <-  get.vdsid.from.filename(fname)
-result <- plot.raw.data(fname,thefile,district.path,year,vds.id)
+pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
+path = paste(pems.root,district,sep='/')
+thefile <- paste(path,thefile,sep='/')
+print(thefile)
+
+result <- plot.raw.data(fname,thefile,path,year,vds.id)
+
 have.plot <- check.for.plot.attachment(vds.id,year,NULL,subhead='\npost imputation')
 if(! have.plot ){
-  result <- get.and.plot.vds.amelia(vds.id,year)
+    print('going to plot amelia output diagnostics with remote = false')
+  result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
 }
 1
 quit(save='no',status=10)
