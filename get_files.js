@@ -18,6 +18,7 @@ function get_yearly_vdsfiles_local(opts,cb){
         pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
     }
     var searchpath = [root,district].join('/')
+    console.log(searchpath)
     glob(pattern,{cwd:searchpath,dot:true},cb);
     return null
 

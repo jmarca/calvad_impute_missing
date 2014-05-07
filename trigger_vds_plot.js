@@ -63,9 +63,8 @@ function vdsfile_handler(opt){
                     }
                    ,function(err,state){
                         if(err) return cb(err)
-                        console.log({file:f,state:state})
                         if(!state){
-                            console.log('push to queue')
+                            console.log('push to queue '+f)
                             file_queue.push({'file':f
                                             ,'opts':opt
                                             }
@@ -73,6 +72,8 @@ function vdsfile_handler(opt){
                                                 console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
                                                 return null
                                             })
+                        }else{
+                            console.log('done with '+f)
                         }
                         return cb()
                     });
@@ -84,14 +85,14 @@ function vdsfile_handler(opt){
 var years = [2010];
 
 var districts = ['D03'
-                // ,'D04'
-                // ,'D05'
-                // ,'D06'
-                // ,'D07'
-                // ,'D08'
-                // ,'D10'
-                // ,'D11'
-                // ,'D12'
+                ,'D04'
+                ,'D05'
+                ,'D06'
+                ,'D07'
+                ,'D08'
+                ,'D10'
+                ,'D11'
+                ,'D12'
                 ]
 
 
@@ -111,24 +112,36 @@ _.each(years,function(year){
     })
 });
 
-
 async.eachSeries(years_districts
-            ,function(opt,ydcb){
-                 // get the files
-                 var handler = vdsfile_handler(opt)
-                 console.log('checking '+opt.env['RDISTRICT']+' '+opt.env['RYEAR'])
-                 get_files.get_yearly_vdsfiles_local({'district':opt.env['RDISTRICT']
-                                                     ,'year':opt.env['RYEAR']
-                                                      //,'rdata':1
-                                                     }
-                                                    ,function(err,list){
-                                                         if(err) throw new Error(err)
-                                                         console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-                                                         async.each(list
-                                                                   ,handler
-                                                                   ,ydcb);
-                                                         return null
-                                                     });
-             });
+                ,function(opt,ydcb){
+                     // get the files
+                     var handler = vdsfile_handler(opt)
+                     console.log('checking '+opt.env['RDISTRICT']+' '+opt.env['RYEAR'])
+                     get_files.get_yearly_vdsfiles_local({'district':opt.env['RDISTRICT']
+                                                         ,'year':opt.env['RYEAR']
+                                                          //,'rdata':1
+                                                         }
+                                                        ,function(err,list){
+                                                             if(err){
+                                                                 console.log('got error, throwing')
+                                                                 throw new Error(err)
+                                                             }
+                                                             console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
+
+
+                                                             // testing short circuit
+                                                             //list = ['275/W/275WB->50WB/314530_ML_2010.txt.xz']
+
+                                                             async.eachSeries(list
+                                                                             ,handler
+                                                                             ,ydcb)
+                                                             return null
+                                                             //return ydcb()
+                                                         })
+                 },
+                 function(){
+                     console.log('done with each (year, district) combination')
+                     return null
+                 })
 
 1;
