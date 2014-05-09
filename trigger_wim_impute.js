@@ -54,7 +54,7 @@ file_queue.drain =function(){
     return null
 }
 
-var years = [2007]//[2010]//,2011];
+var years = [2010]//,2011];
 
 var RCall = ['--no-restore','--no-save','wim_impute.R']
 
@@ -73,9 +73,8 @@ _.each(years,function(year){
     wim_sites({'year':year
               ,'config_file':config_file}
              ,function(e,r){
-        console.log(e)
         console.log(r)
-        _.each([r.rows[0]],function(row){
+        _.each(r.rows,function(row){
             var w = row.key[2]
             if(unique_wim[w] === undefined){
                 var _opts = _.clone(opts)
