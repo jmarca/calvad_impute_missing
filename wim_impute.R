@@ -43,15 +43,23 @@ if(is.null(wim.path)){
   exit(1)
 }
 
-bailout <- Sys.getenv(c('WIM_PLOTONLY'))[1]
-if(is.null(bailout)){
-    bailout <- FALSE
+plot <- as.numeric(Sys.getenv(c('WIM_PLOT'))[1])
+if(plot==0){
+    plot <- FALSE
+}else{
+    plot <- TRUE
+}
+impute <- as.numeric(Sys.getenv(c('WIM_IMPUTE'))[1])
+if(impute==0){
+    impute <- FALSE
+}else{
+    impute <- TRUE
 }
 
 done.sites <- c()
 
 
-process.wim.site(wim.site=wim.site,year=year,plot=FALSE)
-## bailout =  no imputation, just plots
+process.wim.site(wim.site=wim.site,year=year,plot=plot,impute=impute)
+
 
 dbDisconnect(con)
