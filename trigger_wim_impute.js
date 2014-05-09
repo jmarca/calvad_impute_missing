@@ -31,6 +31,8 @@ var trigger_R_job = function(task,done){
 
     task.env['RYEAR']=task.year
     task.env['WIM_SITE']=wim
+    task.env['WIM_IMPUTE']=1
+    task.env['WIM_PLOT']=1
 
     var R  = spawn('Rscript', RCall, task);
     R.stderr.setEncoding('utf8')
@@ -76,20 +78,20 @@ _.each(years,function(year){
         console.log(r)
         _.each(r.rows,function(row){
             var w = row.key[2]
-            if(unique_wim[w] === undefined){
+            if(unique_wim[w+year] === undefined){
                 var _opts = _.clone(opts)
-                _opts.wim=row.key[2]
+                _opts.wim=w
                 _opts.year=year
 
                 file_queue.push(_opts
                                ,function(){
-                                    console.log('wim site '+w+' done, '
+                                    console.log('wim site '+w+' '+year+' done, '
                                                +file_queue.length()
                                                +' files remaining')
                                     return null
                                 })
 
-                unique_wim[w]=1
+                unique_wim[w+year]=1
             }
         })
     })
