@@ -12,9 +12,10 @@
     "glob": "",
     "lodash": "",
     "pg":"",
-    "suss_detector_id" : "git://github.com/jmarca/suss_detector_id.git",
-    "couch_check_state": "git://github.com/jmarca/couch_check_state.git",
-    "couch_set_state": "git://github.com/jmarca/couch_set_state.git"
+    "suss_detector_id" : "jmarca/suss_detector_id.git",
+    "couch_check_state": "jmarca/couch_check_state.git",
+    "couch_set_state": "jmarca/couch_set_state.git",
+    "calvad_wim_sites":"jmarca/calvad_wim_sites"
   },
   "devDependencies": {
     "should": ""
