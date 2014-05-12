@@ -43,11 +43,17 @@ if(is.null(wim.path)){
   exit(1)
 }
 
-plot <- as.numeric(Sys.getenv(c('WIM_PLOT'))[1])
+plot <- as.numeric(Sys.getenv(c('WIM_PLOT_PRE'))[1])
 if(plot==0){
     plot <- FALSE
 }else{
     plot <- TRUE
+}
+postplot <- as.numeric(Sys.getenv(c('WIM_PLOT_POST'))[1])
+if(postplot==0){
+    postplot <- FALSE
+}else{
+    postplot <- TRUE
 }
 impute <- as.numeric(Sys.getenv(c('WIM_IMPUTE'))[1])
 if(impute==0){
@@ -59,7 +65,11 @@ if(impute==0){
 done.sites <- c()
 
 
-process.wim.site(wim.site=wim.site,year=year,plot=plot,impute=impute)
-
+if(plot | impute){
+    process.wim.site(wim.site=wim.site,year=year,preplot=plot,postplot=postplot,impute=impute)
+}
+if(postplot){
+    post.impute.plots(wim.site=wim.site,year=year)
+}
 
 dbDisconnect(con)

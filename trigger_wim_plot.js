@@ -32,7 +32,8 @@ var trigger_R_job = function(task,done){
     task.env['RYEAR']=task.year
     task.env['WIM_SITE']=wim
     task.env['WIM_IMPUTE']=0
-    task.env['WIM_PLOT']=1
+    task.env['WIM_PLOT_PRE']=0
+    task.env['WIM_PLOT_POST']=1
 
     var R  = spawn('Rscript', RCall, task);
     R.stderr.setEncoding('utf8')
@@ -56,7 +57,7 @@ file_queue.drain =function(){
     return null
 }
 
-var years = [2007,2008,2009]//,2010,2011];
+var years = [2010]//,2010,2011];
 
 var RCall = ['--no-restore','--no-save','wim_impute.R']
 
@@ -73,28 +74,28 @@ var config={}
 
 _.each(years,function(year){
     wim_sites.get_wim_need_plotting({'year':year
-              ,'config_file':config_file}
-             ,function(e,r){
-        console.log(r)
-        _.each(r.rows,function(row){
-            var w = row.key[2]
-            if(unique_wim[w+year] === undefined){
-                var _opts = _.clone(opts)
-                _opts.wim=w
-                _opts.year=year
+                                    ,'config_file':config_file}
+                                   ,function(e,r){
+                                        console.log(r)
+                                        _.each(r.rows,function(row){
+                                            var w = row.key[2]
+                                            if(unique_wim[w+year] === undefined){
+                                                var _opts = _.clone(opts)
+                                                _opts.wim=w
+                                                _opts.year=year
 
-                file_queue.push(_opts
-                               ,function(){
-                                    console.log('wim site '+w+' '+year+' done, '
-                                               +file_queue.length()
-                                               +' files remaining')
-                                    return null
-                                })
+                                                file_queue.push(_opts
+                                                               ,function(){
+                                                                    console.log('wim site '+w+' '+year+' done, '
+                                                                               +file_queue.length()
+                                                                               +' files remaining')
+                                                                    return null
+                                                                })
 
-                unique_wim[w+year]=1
-            }
-        })
-    })
+                                                unique_wim[w+year]=1
+                                            }
+                                        })
+                                    })
 });
 
 
