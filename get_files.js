@@ -13,15 +13,16 @@ function get_yearly_vdsfiles_local(opts,cb){
     var district = opts.district
     var pattern
     if(opts.rdata){
-        pattern = ["**/*ML_*df*",opts.year,"*RData"].join('')
+        pattern = ["**/*ML_*df*",opts.year,".*RData"].join('')
     }else{
         pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
     }
     if(opts.amelia){
-        pattern = ["**/*ML_*imputed*",opts.year,"*RData"].join('')
+        // looking for 814480_ML_2010.120.imputed.RData
+        pattern = ["**/*ML_",opts.year,"*imputed.RData"].join('')
     }
     var searchpath = [root,district].join('/')
-    console.log(searchpath)
+    console.log(searchpath,pattern)
     glob(pattern,{cwd:searchpath,dot:true},cb);
     return null
 

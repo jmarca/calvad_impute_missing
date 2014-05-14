@@ -40,15 +40,15 @@ describe('get vds files local',function(){
                                                    list.should.have.property('length',10)
                                                    _.each(list
                                                          ,function(f){
-                                                              f.should.match(new RegExp(yr+'RData$'));
+                                                              f.should.match(new RegExp(yr+'.*\.RData$'));
                                                           })
                                                        return done()
                                                })
        })
-    it('should get amelia files in 2010, D03'
+    it('should get amelia files in 2010, D05'
       ,function(done){
            var yr = 2010
-           get_files.get_yearly_vdsfiles_local({'district':'D03'
+           get_files.get_yearly_vdsfiles_local({'district':'D05'
                                                ,'year':yr
                                                ,'amelia':1}
                                               ,function(err,list){
@@ -57,7 +57,7 @@ describe('get vds files local',function(){
                                                    list.should.have.property('length',10)
                                                    _.each(list
                                                          ,function(f){
-                                                              f.should.match(new RegExp(yr+'RData$'));
+                                                              f.should.match(new RegExp(yr+'.*\.RData$'));
                                                           })
                                                        return done()
                                                })
