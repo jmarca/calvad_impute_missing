@@ -41,7 +41,7 @@ if(is.null(localcouch)){
 
 ## pass in the vdsid and the year
 
-impute.vds.site <- function(vdsid,year,vdsfile,district){
+impute.vds.site <- function(vdsid,year,vdsfile,district,maxiter=100){
 
   print(paste('processing ',paste(vdsid,collapse=', ')))
   ## load the vds data
@@ -70,7 +70,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   ## wim.ids <- get.list.neighbor.wim.sites(vdsid)
   ## widen the net
   wim.ids <- get.list.district.neighbor.wim.sites(vdsid)
-  
+
   bigdata <- load.wim.pair.data(wim.ids,vds.nvars=vds.nvars,lanes=lanes)
 
   ## iterate a bit here
@@ -85,7 +85,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
       }
     }
   }
-  
+
   print('concatenating merged and to-do data sets')
   if(dim(bigdata)[1] < 100){
     print('bigdata looking pretty empty')
@@ -129,7 +129,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
 
   ## run amelia to impute missing (trucks)
   print('all set to impute')
-  big.amelia <- fill.truck.gaps(bigdata)
+  big.amelia <- fill.truck.gaps(bigdata,maxiter=maxiter)
 
 
   ## I used to save here, but now that this is distributed, I should
@@ -138,7 +138,7 @@ impute.vds.site <- function(vdsid,year,vdsfile,district){
   ## write out the imputation chains information to couchdb for later analysis
   ## and also generate plots as attachments
 
-  itercount <- store.amelia.chains(big.amelia,year,vdsid,'truckimputation')
+  itercount <- store.amelia.chains(big.amelia,year,vdsid,'truckimputation',maxiter=maxiter)
 
 
   ## extract just this vds_id data and
@@ -226,6 +226,11 @@ if(is.null(year)){
 }
 
 seconds <- 3600
+
+maxiter = Sys.getenv(c('CALVAD_VDSWIM_IMPUTE_MAXITER'))[1]
+if(is.null(maxiter)){
+    maxiter=200
+}
 
 wim.vds.pairs <- get.list.closest.wim.pairs()
 

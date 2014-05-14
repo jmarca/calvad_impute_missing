@@ -43,6 +43,7 @@ var path = require('path');
 var fs = require('fs');
 var async = require('async');
 var _ = require('lodash');
+var num_CPUs = require('os').cpus().length;
 var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
@@ -50,13 +51,14 @@ var couch_set   = require('couch_set_state')
 
 var pg = require('pg')
 
-var statedb = 'vdsdata%2ftracking'
+
+var statedb = 'vdsdata%2ftrimmed'
 
 var R;
+var RCall = ['--no-restore','--no-save','vdswim_impute.R']
 
 //psql
 var env = process.env
-var jobs = env.NUM_R_JOBS || 2
 
 var puser = env.PSQL_USER
 var ppass = env.PSQL_PASS
@@ -82,7 +84,7 @@ var finish_string = env.FINISH_STRING || date.toISOString()+' finish'
  *
  */
 
-function vdsfile_handler(opt){
+function file_handler(opt){
 
     return function(f,cb){
         var did = suss_detector_id(f)
@@ -238,12 +240,9 @@ var setup_R_job = function(task,done){
 }
 
 
-function spawnR(task,done){
-
+function trigger_R_job(task,done){
     var file = task.file
     console.log('processing '+file+' in R')
-    // trigger the file loop callback
-    if(task.cb !== undefined)   task.cb()
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
@@ -260,54 +259,59 @@ function spawnR(task,done){
     R.stderr.pipe(logstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',did)
-        if(code==10){
-                    couch_set({'db':statedb
-                              ,'doc':did
-                              ,'year':opts.env['RYEAR']
-                              ,'state':'truckimputed'
-                              ,'value':finish_string
-                              }
-                             ,function(err){
-                                  if(err) throw new Error(err)
-                                  // clean up past failure state
-                                  couch_set({'db':statedb
-                                            ,'doc':did
-                                            ,'year':opts.env['RYEAR']
-                                            ,'state':'truck_imputation_failed'
-                                            ,'value':null
-                                            }
-                                           ,function(err){
-                                                if(err) throw new Error(err)
-                                                //throw new Error('die in testing')
-                                                return done()
-                                            })
-                              })
-        }else{
-            //throw new Error('die in testing')
-            done()
-        }
-        return null
+        // throw new Error('die')
+        return done()
     })
 }
+var file_queue=async.queue(trigger_R_job,num_CPUs)
+file_queue.drain =function(){
+    console.log('queue drained')
+    return null
+}
 
-var file_queue=async.queue(setup_R_job,jobs)
+function file_handler(opt){
+    return function(f,cb){
+        var did = suss_detector_id(f)
+
+        couch_check({'db':statedb
+                    ,'doc':did
+                    ,'year':opt.env['RYEAR']
+                    ,'state':'truckimputation_chain_lengths'
+                    }
+                   ,function(err,state){
+                        if(err) return cb(err)
+                        console.log({file:f,state:state})
+                        if( !state || !_.isArray(state) ){
+                            console.log('push to queue')
+                            file_queue.push({'file':f
+                                            ,'opts':opt
+                                            }
+                                           ,function(){
+                                                console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
+                                                return null
+                                            })
+                        }
+                        return cb()
+                    });
+        return null
+    }
+}
 
 
-var years = [2007,2008,2009]//,2010] // 2011
+var years = [2010]//,2007,2008,2009,2011
 
-var districts = ['D11'
-                ,'D04'
-                ,'D03'
-                ,'D08'
-                ,'D12'
-                ,'D05'
-                ,'D06'
-                ,'D07'
-                ,'D10'
+var districts = ['D05'
+                // ,'D06'
+                // ,'D07'
+                // ,'D11'
+                // ,'D04'
+                // ,'D03'
+                // ,'D08'
+                // ,'D12'
+                // ,'D10'
                 ]
 
 
-var RCall = ['--no-restore','--no-save','vdswim_impute.R']
 
 
 var opts = { cwd: undefined,
@@ -316,7 +320,6 @@ var opts = { cwd: undefined,
 var years_districts = []
 _.each(years,function(year){
     _.each(districts,function(district){
-        //if(year==2008 && !(district=='D11' ||district=='D10') ) return null
         var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
@@ -325,18 +328,20 @@ _.each(years,function(year){
     })
 });
 
-// debugging, just do one combo for now
-// years_districts=[years_districts[0]]
-async.eachLimit(years_districts,1,function(opt,cb){
-    // get the files
-    var handler = vdsfile_handler(opt)
-    console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles({district:opt.env['RDISTRICT']
-                                  ,year:opt.env['RYEAR']
-                                  ,'amelia':1}
-                                 ,function(err,list){
-                                      if(err) throw new Error(err)
-                                      async.eachLimit(list,5
+async.eachSeries(years_districts
+            ,function(opt,ydcb){
+                 var handler = file_handler(opt)
+                 console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
+                 get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
+                                                     ,year:opt.env['RYEAR']
+                                                     ,'amelia':1}
+                                                    ,function(err,list){
+                                                         if(err) throw new Error(err)
+                                                         console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
+                                                         async.eachSeries(list
+                                                                     ,handler
+                                                                     ,ydcb);
+
                                                 ,handler
                                                 ,cb);
                                       return null
