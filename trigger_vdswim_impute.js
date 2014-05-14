@@ -54,191 +54,8 @@ var pg = require('pg')
 
 var statedb = 'vdsdata%2ftrimmed'
 
-var R;
+
 var RCall = ['--no-restore','--no-save','vdswim_impute.R']
-
-//psql
-var env = process.env
-
-var puser = env.PSQL_USER
-var ppass = env.PSQL_PASS
-var phost = env.PSQL_HOST || '127.0.0.1'
-var pport = env.PSQL_PORT || 5432
-
-var spatialvdsConnectionString = "pg://"+puser+":"+ppass+"@"+phost+":"+pport+"/spatialvds";
-
-var neighborquery = 'select distinct site_no, direction from imputed.vds_wim_neighbors where vds_id='
-
-var finish_regex = /finish/;
-var date=new Date()
-var inprocess_string = env.INPROCESS_STRING || date.toISOString()+' inprocess'
-var finish_string = env.FINISH_STRING || date.toISOString()+' finish'
-
-/**
- * refactor items
- *
- * 1. get files here
- * 2. send just a single file to R for processing
- * 3. which means make sure that each file that is sent to R really
- *    needs processing
- *
- */
-
-function file_handler(opt){
-
-    return function(f,cb){
-        var did = suss_detector_id(f)
-        // need to check that truck vols have not yet been imputed
-        async.series([function(done){ // check for truckimputed variable
-                          couch_check({'db':statedb
-                                      ,'doc':did
-                                      ,'year':opt.env['RYEAR']
-                                      ,'state':'truckimputed'
-                                      }
-                                     ,function(err,state){
-                                          if(err) throw new Error(err)
-                                          if(state && (finish_regex.test(state)) || state === inprocess_string){
-                                              return done('quit')
-                                          }
-                                          return done()
-                                      })
-                          return null
-                      }
-                     ,function(done){ // double check, via truckimputation_chain_lengths
-                          couch_check({'db':statedb
-                                      ,'doc':did
-                                      ,'year':opt.env['RYEAR']
-                                      ,'state':'truckimputation_chain_lengths'
-                                      }
-                                     ,function(err,state){
-                                          if(err) throw new Error(err)
-                                          if(state && _.isArray(state) && state.length==5){
-                                              return done('quit')
-                                          }
-                                          return done()
-                                      })
-                          return null
-                      }
-                     ,function(done){
-                          // need to verify that the raw imputation is okay
-                          couch_check({'db':statedb
-                                      ,'doc':did
-                                      ,'year':opt.env['RYEAR']
-                                      ,'state':'vdsraw_chain_lengths'
-                                      }
-                                     ,function(err,state){
-                                          if(err) throw new Error(err)
-                                          if(state && _.isArray(state) && state.length==5){
-                                              // the raw data is okay to proceed
-                                              return done()
-                                          }
-                                          console.log(did +' no vds imputation')
-                                          return done('quit')
-                                      })
-                          return null
-                      }
-                     ,function(done){
-                          // verify that there are neighbors to work with
-                          var queryHandler = function(err,client,pgdone){
-                              if(err) throw new Error(err)
-                              var neighbors = []
-                              var query = client.query(neighborquery+did)
-                              query.on('error',function(err){
-                                  throw new Error(err)
-                              })
-                              query.on('row', function(row) {
-                                  //fired once for each row returned
-                                  neighbors.push(row);
-                              });
-                              query.on('end',function(result){
-                                  pgdone()
-                                  couch_set({'db':statedb
-                                            ,'doc':did
-                                            ,'year':opts.env['RYEAR']
-                                            ,'state':'wim_neighbors'
-                                            ,'value':neighbors}
-                                           ,function(e){
-                                                if(e){
-                                                    // try one more time
-                                                    couch_set({'db':statedb
-                                                              ,'doc':did
-                                                              ,'year':opts.env['RYEAR']
-                                                              ,'state':'wim_neighbors'
-                                                              ,'value':neighbors}
-                                                             ,function(e){
-                                                                  if(e) throw new Error(e)
-                                                                  if(neighbors.length<1){
-                                                                      console.log(did +' no neighbor WIM sites')
-                                                                      return done('quit')
-                                                                  }
-                                                                  return done()
-                                                              })
-                                                    return null
-                                                }else{
-                                                    if(neighbors.length<1){
-                                                        console.log(did +' no neighbor WIM sites')
-                                                        return done('quit')
-                                                    }
-                                                    return done()
-                                                }
-                                            })
-                                  return null
-                              })
-                          }
-                          pg.connect(spatialvdsConnectionString, queryHandler);
-                                       return null
-                      }]
-                    ,function(err){
-                         if(err){
-                             if(err === 'quit')
-                                 return cb()
-                             return cb(err)
-                         }
-                         console.log(did +' pushing to process in R')
-                         file_queue.push({'file':f
-                                         ,'opts':opt
-                                         ,'cb':cb})
-                         return null
-                     })
-        return null
-    }
-}
-
-
-var setup_R_job = function(task,done){
-    var file = task.file
-    var did = suss_detector_id(file)
-    var opts = _.clone(task.opts,true)
-    // need to check again that truck vols have not yet been imputed
-    console.log('checking ',did)
-    couch_check({'db':statedb
-                ,'doc':did
-                ,'year':opts.env['RYEAR']
-                ,'state':'truckimputed'
-                }
-               ,function(err,state){
-                    if(err) throw new Error(err)
-                    if(state && (finish_regex.test(state)) || state === inprocess_string){
-                        return done()
-                    }
-                    console.log('checking out ',did)
-                    // check out for processing
-                    couch_set({'db':statedb
-                              ,'doc':did
-                              ,'year':opts.env['RYEAR']
-                              ,'state':'truckimputed'
-                              ,'value':inprocess_string
-                              }
-                             ,function(err){
-                                  if(err) throw new Error(err)
-                                  console.log('spawn R ',did)
-                                  return spawnR(task,done)
-                              })
-                    return null
-                })
-    return null
-}
-
 
 function trigger_R_job(task,done){
     var file = task.file
@@ -263,6 +80,107 @@ function trigger_R_job(task,done){
         return done()
     })
 }
+
+//psql
+var env = process.env
+
+var puser = env.PSQL_USER
+var ppass = env.PSQL_PASS
+var phost = env.PSQL_HOST || '127.0.0.1'
+var pport = env.PSQL_PORT || 5432
+
+var spatialvdsConnectionString = "pg://"+puser+":"+ppass+"@"+phost+":"+pport+"/spatialvds";
+
+var neighborquery = 'select distinct site_no, direction from imputed.vds_wim_neighbors where vds_id='
+
+var finish_regex = /finish/;
+var date=new Date()
+var inprocess_string = env.INPROCESS_STRING || date.toISOString()+' inprocess'
+var finish_string = env.FINISH_STRING || date.toISOString()+' finish'
+
+function check_if_done(task,cb){
+    var did = task.detector_id
+    // need to check that truck vols have not yet been imputed
+
+    couch_check({'db':statedb
+                ,'doc':did
+                ,'year':task.opt.env['RYEAR']
+                ,'state':'truckimputation_chain_lengths'
+                }
+               ,function(err,state){
+                    if(err) throw new Error(err)
+                    console.log({file:f,state:state})
+                    if( !state || !_.isArray(state) ){
+                        console.log('not imputed yet')
+                        return cb()
+                    }else{
+                        return cb('quit')
+                    }
+                })
+    return null
+}
+function check_if_raw_okay(task,cb){
+    var did = task.detector_id
+    couch_check({'db':statedb
+                ,'doc':did
+                ,'year':task.opt.env['RYEAR']
+                ,'state':'vdsraw_chain_lengths'
+                }
+               ,function(err,state){
+                    if(err) return cb(err)
+                    if(err) throw new Error(err)
+                    if(state && _.isArray(state)){
+                        // okay, keep going
+                        return cb(null)
+                    }else{
+                        return cb('vds imputation not done')
+                    }
+                });
+    return null
+}
+function check_for_neighbors(task,cb){
+    var did = task.detector_id
+    // verify that there are neighbors to work with
+    var queryHandler = function(err,client,pgdone){
+        if(err) throw new Error(err)
+        var neighbors = []
+        var query = client.query(neighborquery+did)
+        query.on('error',function(err){
+            throw new Error(err)
+        })
+        query.on('row', function(row) {
+            //fired once for each row returned
+            neighbors.push(row);
+        });
+        query.on('end',function(result){
+            pgdone()
+            if(neighbors.length<1){
+                console.log(did +' no neighbor WIM sites')
+                return cb('quit')
+            }else{
+                cb(null)
+                couch_set({'db':statedb
+                          ,'doc':did
+                          ,'year':opts.env['RYEAR']
+                          ,'state':'wim_neighbors'
+                          ,'value':neighbors}
+                         ,function(e){
+                              if(e){
+                                  // so what
+                                  // who cares
+                                  //
+                                  throw new Error(e)
+                              }
+                              return null
+                          });
+                return null
+            }
+        })
+    }
+    pg.connect(spatialvdsConnectionString, queryHandler);
+    return null
+}
+
 var file_queue=async.queue(trigger_R_job,num_CPUs)
 file_queue.drain =function(){
     console.log('queue drained')
@@ -272,17 +190,21 @@ file_queue.drain =function(){
 function file_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
+        var task = {'file':f
+                   ,'opts':opt
+                   ,'detector_id':did
+                   }
+        async.waterfall([function(cb2){
+                             return cb2(null,task)
+                         }
+                        ,check_if_done
+                        ,check_if_raw_okay
+                        ,check_for_neighbors
+                        ]
+                       ,function(e,r){
+                            if(e) return cb(null)
 
-        couch_check({'db':statedb
-                    ,'doc':did
-                    ,'year':opt.env['RYEAR']
-                    ,'state':'truckimputation_chain_lengths'
-                    }
-                   ,function(err,state){
-                        if(err) return cb(err)
-                        console.log({file:f,state:state})
-                        if( !state || !_.isArray(state) ){
-                            console.log('push to queue')
+                            console.log(did +' pushing to process in R')
                             file_queue.push({'file':f
                                             ,'opts':opt
                                             }
@@ -290,9 +212,9 @@ function file_handler(opt){
                                                 console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
                                                 return null
                                             })
+                            return cb(null)
                         }
-                        return cb()
-                    });
+                       );
         return null
     }
 }
@@ -341,12 +263,10 @@ async.eachSeries(years_districts
                                                          async.eachSeries(list
                                                                      ,handler
                                                                      ,ydcb);
+                                                         return null
+                                                     });
+             });
 
-                                                ,handler
-                                                ,cb);
-                                      return null
-                                  });
-});
 
 
 
