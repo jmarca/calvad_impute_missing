@@ -52,7 +52,7 @@ var couch_set   = require('couch_set_state')
 var pg = require('pg')
 
 
-var statedb = 'vdsdata%2ftrimmed'
+var statedb = 'vdsdata%2ftracking'
 
 
 var RCall = ['--no-restore','--no-save','vdswim_impute.R']
@@ -101,7 +101,7 @@ var finish_string = env.FINISH_STRING || date.toISOString()+' finish'
 function check_if_done(task,cb){
     var did = task.detector_id
     // need to check that truck vols have not yet been imputed
-
+    console.log('make sure not done yet',did,task.file)
     couch_check({'db':statedb
                 ,'doc':did
                 ,'year':task.opt.env['RYEAR']
@@ -109,10 +109,10 @@ function check_if_done(task,cb){
                 }
                ,function(err,state){
                     if(err) throw new Error(err)
-                    console.log({file:f,state:state})
+                    console.log({file:task.file,state:state})
                     if( !state || !_.isArray(state) ){
                         console.log('not imputed yet')
-                        return cb()
+                        return cb(null,task)
                     }else{
                         return cb('quit')
                     }
@@ -121,18 +121,24 @@ function check_if_done(task,cb){
 }
 function check_if_raw_okay(task,cb){
     var did = task.detector_id
+    console.log({'db':statedb
+                ,'doc':did
+                ,'year':task.opt.env['RYEAR']
+                ,'state':'vdsraw_chain_lengths'
+                })
     couch_check({'db':statedb
                 ,'doc':did
                 ,'year':task.opt.env['RYEAR']
                 ,'state':'vdsraw_chain_lengths'
                 }
                ,function(err,state){
-                    if(err) return cb(err)
                     if(err) throw new Error(err)
                     if(state && _.isArray(state)){
                         // okay, keep going
-                        return cb(null)
+                        console.log('good')
+                        return cb(null,task)
                     }else{
+                        console.log('bad',state)
                         return cb('vds imputation not done')
                     }
                 });
@@ -158,7 +164,7 @@ function check_for_neighbors(task,cb){
                 console.log(did +' no neighbor WIM sites')
                 return cb('quit')
             }else{
-                cb(null)
+                cb(null,task)
                 couch_set({'db':statedb
                           ,'doc':did
                           ,'year':opts.env['RYEAR']
@@ -191,7 +197,7 @@ function file_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
         var task = {'file':f
-                   ,'opts':opt
+                   ,'opt':opt
                    ,'detector_id':did
                    }
         async.waterfall([function(cb2){
@@ -223,7 +229,7 @@ function file_handler(opt){
 var years = [2010]//,2007,2008,2009,2011
 
 var districts = ['D05'
-                // ,'D06'
+                //,'D06'
                 // ,'D07'
                 // ,'D11'
                 // ,'D04'
@@ -259,6 +265,7 @@ async.eachSeries(years_districts
                                                      ,'amelia':1}
                                                     ,function(err,list){
                                                          if(err) throw new Error(err)
+                                                         //list = list.slice(0,10)
                                                          console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
                                                          async.eachSeries(list
                                                                      ,handler

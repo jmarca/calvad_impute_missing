@@ -7,15 +7,15 @@ wim.service <- 'wimdata'
 #wim.path <- "/data/wim"
 output.path <- "./imputed"
 fschecks <- FALSE
-source('components/jmarca-rstats_couch_utils/couchUtils.R')
-source('components/jmarca-rstats_remote_files/remoteFiles.R')
-source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
-source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
-source('components/jmarca-calvad_rscripts/lib/get_couch.R')
-source('components/jmarca-calvad_rscripts/lib/just.amelia.call.R')
+source('components/jmarca-rstats_couch_utils/couchUtils.R',chdir=TRUE)
+print ('rf')
+source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R',chdir=TRUE)
+source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R',chdir=TRUE)
 
-source('components/jmarca-calvad_rscripts/lib/wim.loading.functions.R')
-source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
+source('components/jmarca-calvad_rscripts/lib/just.amelia.call.R',chdir=TRUE)
+
+source('components/jmarca-calvad_rscripts/lib/wim.loading.functions.R',chdir=TRUE)
+source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R",chdir=TRUE)
 
 
 
@@ -45,7 +45,16 @@ impute.vds.site <- function(vdsid,year,vdsfile,district,maxiter=100){
 
   print(paste('processing ',paste(vdsid,collapse=', ')))
   ## load the vds data
-  df.vds.zoo <- get.zooed.vds.amelia(vdsid,serverfile=vdsfile,path=district)
+thefile = Sys.getenv(c('FILE'))[1]
+if(is.null(thefile)){
+  print('assign a file to process to the FILE environment variable')
+  exit(1)
+}
+pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
+path = paste(pems.root,district,sep='/')
+thefile <- paste(path,thefile,sep='/')
+
+  df.vds.zoo <- get.zooed.vds.amelia(vdsid,serverfile=vdsfile,path=path,remote=FALSE)
   if(is.null(df.vds.zoo)){
     stop()
   }
@@ -69,7 +78,8 @@ impute.vds.site <- function(vdsid,year,vdsfile,district,maxiter=100){
 
   ## wim.ids <- get.list.neighbor.wim.sites(vdsid)
   ## widen the net
-  wim.ids <- get.list.district.neighbor.wim.sites(vdsid)
+  wim.ids <- ##get.list.district.neighbor.wim.sites(vdsid)
+      get.list.neighbor.wim.sites(vdsid)
 
   bigdata <- load.wim.pair.data(wim.ids,vds.nvars=vds.nvars,lanes=lanes)
 
