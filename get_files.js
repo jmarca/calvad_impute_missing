@@ -17,6 +17,9 @@ function get_yearly_vdsfiles_local(opts,cb){
     }else{
         pattern = ["**/*ML_",opts.year,".txt.*z"].join('')
     }
+    if(opts.amelia){
+        pattern = ["**/*ML_*imputed*",opts.year,"*RData"].join('')
+    }
     var searchpath = [root,district].join('/')
     console.log(searchpath)
     glob(pattern,{cwd:searchpath,dot:true},cb);
