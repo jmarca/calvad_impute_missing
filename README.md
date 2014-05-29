@@ -111,3 +111,19 @@ There are four different kinds of imputation.
 3. Impute truck counts at VDS sites
 
 4. Impute vehicle counts at WIM sites
+
+
+# Actually running the imputation (notes as I run it in 2014 for 2010)
+
+Imputing VDS works
+
+Imputing WIM works
+
+I also set up code to exclusively trigger the pre and post impute
+plots.
+
+To keep all the couchdb databases synchronized properly, you should
+run code from `calvad/strip_attachments_vdsdata_tracking`
+
+After imputing WIM and VDS, you have to merge pairs.  That is what I
+am working on now.
