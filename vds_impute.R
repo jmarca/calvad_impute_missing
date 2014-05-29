@@ -11,12 +11,12 @@ library('RCurl')
 library('RJSONIO')
 
 ## source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
-source('components/jmarca/rstats_couch_utils/master/couchUtils.R',chdir=TRUE)
+source('components/jmarca-rstats_couch_utils/couchUtils.R',chdir=TRUE)
 ##source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
 ## source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
 ## source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
-source('components/jmarca/calvad_rscripts/master/lib/vds_impute.R',chdir=TRUE)
+source('components/jmarca-calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
 
 library('RPostgreSQL')
 m <- dbDriver("PostgreSQL")

@@ -1,3 +1,4 @@
+/*global require process console */
 
 var util  = require('util'),
     spawn = require('child_process').spawn;
@@ -82,21 +83,62 @@ function vdsfile_handler(opt){
         return null
     }
 }
+var glob = require('glob')
+
+var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
+var root = path.normalize(pems_root)
+
+function vdsfile_handler_2(opt){
+    var district = opt.env['RDISTRICT']
+    var year=opt.env['RYEAR']
+    var searchpath = [root,district].join('/')
+
+    return function(f,cb){
+        var did = suss_detector_id(f)
+        var pattern = ["**/"+did+"_ML_",year,"*imputed.RData"].join('')
+        console.log(pattern)
+        glob(pattern,{cwd:searchpath,dot:true},function(err,result){
+
+            if(err){
+                console.log(err)
+                return cb(err)
+            }
+            //console.log(result)
+            //throw new Error('die')
+            if(result.length === 0){
+                console.log('no imputed file output, push to queue')
+                // throw new Error('die')
+                file_queue.push({'file':f
+                                ,'opts':opt
+                                }
+                               ,function(){
+                                    console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
+                                    return null
+                                })
+            }else{
+                console.log('already done: '+result)
+            }
+            return cb()
+        });
+        return null
+    }
+}
 
 
 var years = [2010]//,2011];
 
-var districts = [//'D03'
-                //,'D04'
-    // did these during debugging
-                //,'D05'
-                //,'D06'
-                //,
-                'D07'
-                ,'D08'
-                ,'D10'
-                ,'D11'
-                ,'D12'
+var districts = ['D12'
+                // ,'D03'
+    //             ,'D04'
+    // // did these during debugging
+    //             ,'D05'
+    //             ,'D06'
+    //             ,
+    //             'D07'
+    //             ,'D08'
+    //             ,'D10'
+    //             ,'D11'
+
                 ]
 
 
@@ -121,7 +163,7 @@ _.each(years,function(year){
 async.eachSeries(years_districts
             ,function(opt,ydcb){
                  // get the files, load the queue
-                 var handler = vdsfile_handler(opt)
+                 var handler = vdsfile_handler_2(opt)
                  console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
                  get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
                                                      ,year:opt.env['RYEAR']}
