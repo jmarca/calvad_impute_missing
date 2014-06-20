@@ -32,7 +32,8 @@ var trigger_R_job = function(task,done){
     task.env['RYEAR']=task.year
     task.env['WIM_SITE']=wim
     task.env['WIM_IMPUTE']=1
-    task.env['WIM_PLOT']=1
+    task.env['WIM_PLOT_PRE']=1
+    task.env['WIM_PLOT_POST']=1
 
     var R  = spawn('Rscript', RCall, task);
     R.stderr.setEncoding('utf8')
