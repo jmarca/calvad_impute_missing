@@ -16,11 +16,9 @@ con <-  dbConnect(m
                   ,dbname="spatialvds")
 
 source('components/jmarca-rstats_couch_utils/couchUtils.R',chdir=TRUE)
-##source('components/jmarca-calvad_rscripts/lib/wim.aggregate.fixed.R',chdir=TRUE)
-##source('components/jmarca-calvad_rscripts/lib/wim.loading.functions.R',chdir=TRUE)
-##source('components/jmarca-calvad_rscripts/lib/wim.pre.processing.R')
-##source("components/jmarca-calvad_rscripts/master/lib/vds.processing.functions.R")
 source('components/jmarca-calvad_rscripts/lib/process.wim.site.R',chdir=TRUE)
+
+seconds <- 3600
 
 year <- as.numeric(Sys.getenv(c('RYEAR'))[1])
 if(is.null(year)){
@@ -29,7 +27,6 @@ if(is.null(year)){
 }
 print(year)
 
-seconds <- 3600
 
 wim.site <- Sys.getenv(c('WIM_SITE'))[1]
 if(is.null(wim.site)){
