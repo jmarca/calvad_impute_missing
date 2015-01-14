@@ -2,3 +2,8 @@
 /images
 /imputed
 /config.json
+**/.RData
+**/.Rhistory
+*~
+/node_modules/
+/output/
