@@ -43,7 +43,7 @@ First, download all the JavaScript dependencies using npm:
 
 ```
 npm install
-``
+```
 
 I have one test that makes sure that the program can get files from
 the data repository that serves up the broken-up PeMS files.
@@ -54,7 +54,8 @@ var server = process.env.CALVAD_FILE_SERVER || 'http://calvad.ctmlabs.net'
 var port = process.env.CALVAD_FILE_PORT || 80
 ```
 
-The default is to get the files from https://calvad.ctmlabs.net.
+The default is to get the files from https://calvad.ctmlabs.net, which
+sadly appears to be an expired domain (funding for that project was cut).
 There is also a parallel version of the fetching code that will pull
 from a local file system, looking by default under the directory
 '/data/pems/breakup/' that is currently hardcoded in the file
