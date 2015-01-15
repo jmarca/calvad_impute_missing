@@ -15,7 +15,10 @@
     "suss_detector_id" : "jmarca/suss_detector_id.git",
     "couch_check_state": "jmarca/couch_check_state.git",
     "couch_set_state": "jmarca/couch_set_state.git",
-    "calvad_wim_sites":"jmarca/calvad_wim_sites"
+    "calvad_wim_sites":"jmarca/calvad_wim_sites",
+    "calvad_rscripts":"jmarca/calvad_rscripts",
+    "rstats_couch_utils":"jmarca/rstats_couch_utils",
+    "rstats_remote_files":"jmarca/rstats_remote_files"
   },
   "devDependencies": {
     "should": ""
