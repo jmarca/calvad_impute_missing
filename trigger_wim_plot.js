@@ -3,7 +3,7 @@ var util  = require('util'),
     spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var async = require('async');
+var queue = require('queue-async');
 var _ = require('lodash');
 var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
@@ -32,13 +32,13 @@ var trigger_R_job = function(task,done){
     task.env['RYEAR']=task.year
     task.env['WIM_SITE']=wim
     task.env['WIM_IMPUTE']=0
-    task.env['WIM_PLOT_PRE']=0
-    task.env['WIM_PLOT_POST']=1
+    task.env['WIM_PLOT_PRE']=1
+    task.env['WIM_PLOT_POST']=0 // for now
 
     var R  = spawn('Rscript', RCall, task);
     R.stderr.setEncoding('utf8')
     R.stdout.setEncoding('utf8')
-    var logfile = 'log/wimimpute_'+wim+'_'+task.year+'.log'
+    var logfile = 'log/wimplot_'+wim+'_'+task.year+'.log'
     var logstream = fs.createWriteStream(logfile
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
@@ -47,17 +47,17 @@ var trigger_R_job = function(task,done){
     R.stderr.pipe(logstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',wim)
-        // throw new Error('die')
         return done()
     })
 }
-var file_queue=async.queue(trigger_R_job,num_CPUs)
-file_queue.drain =function(){
+var file_queue=queue(num_CPUs)
+
+var file_queue_drain =function(){
     console.log('queue drained')
     return null
 }
 
-var years = [2010]//,2010,2011];
+var years = [2012]//,2010,2011];
 
 var RCall = ['--no-restore','--no-save','wim_impute.R']
 
@@ -71,36 +71,25 @@ var opts = { cwd: undefined,
 var rootdir = path.normalize(__dirname)
 var config_file = rootdir+'/config.json'
 var config={}
+var sites = wim_sites.sites
+years.forEach(function(year){
+    sites.forEach(function(site){
+        var _opts = _.clone(opts)
+        if(unique_wim[site+year] === undefined){
+            unique_wim[site+year] = 1
+            _opts.wim=site.site
+            _opts.year=year
 
-_.each(years,function(year){
-    wim_sites.get_wim_need_plotting({'year':year
-                                    ,'config_file':config_file}
-                                   ,function(e,r){
-                                        console.log(r)
-                                        _.each(r.rows,function(row){
-                                            var w = row.key[2]
-                                            if(unique_wim[w+year] === undefined){
-                                                var _opts = _.clone(opts)
-                                                _opts.wim=w
-                                                _opts.year=year
-
-                                                file_queue.push(_opts
-                                                               ,function(){
-                                                                    console.log('wim site '+w+' '+year+' done, '
-                                                                               +file_queue.length()
-                                                                               +' files remaining')
-                                                                    return null
-                                                                })
-
-                                                unique_wim[w+year]=1
-                                            }
-                                        })
-                                    })
-});
+            file_queue.defer(trigger_R_job,_opts)
+        }
+        return  null
+    })
+    return null
 
 
+})
 
-
+file_queue.await(file_queue_drain)
 
 
 1;
