@@ -4,7 +4,7 @@ var util  = require('util'),
     spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var async = require('async');
+var queue = require('queue-async');
 var _ = require('lodash');
 var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
@@ -29,29 +29,34 @@ var R;
 
 var trigger_R_job = function(task,done){
     var file = task.file
-    console.log('processing '+file)
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
     opts.env['FILE']=file
 
-    var R  = spawn('Rscript', RCall, opts);
-    R.stderr.setEncoding('utf8')
-    R.stdout.setEncoding('utf8')
-    var logfile = 'log/vdsimpute_'+did+'_'+opts.env['RYEAR']+'.log'
-    var logstream = fs.createWriteStream(logfile
-                                        ,{flags: 'a'
-                                         ,encoding: 'utf8'
-                                         ,mode: 0666 })
-    R.stdout.pipe(logstream)
-    R.stderr.pipe(logstream)
-    R.on('exit',function(code){
-        console.log('got exit: '+code+', for ',did)
-        // throw new Error('die')
-        return done()
-    })
+    console.log('processing ',opts)
+
+    // var R  = spawn('Rscript', RCall, opts);
+    // R.stderr.setEncoding('utf8')
+    // R.stdout.setEncoding('utf8')
+    // var logfile = 'log/vdsimpute_'+did+'_'+opts.env['RYEAR']+'.log'
+    // var logstream = fs.createWriteStream(logfile
+    //                                     ,{flags: 'a'
+    //                                      ,encoding: 'utf8'
+    //                                      ,mode: 0666 })
+    // R.stdout.pipe(logstream)
+    // R.stderr.pipe(logstream)
+    // R.on('exit',function(code){
+    //     console.log('got exit: '+code+', for ',did)
+    //     // throw new Error('die')
+    //     return done()
+    // })
+    // for testing, just do nothing
+    return done()
 }
-var file_queue=async.queue(trigger_R_job,num_CPUs)
-file_queue.drain =function(){
+var file_queue=queue(num_CPUs)
+// async.queue(trigger_R_job,num_CPUs)
+
+var file_queue_drain =function(){
     console.log('queue drained')
     return null
 }
@@ -108,13 +113,9 @@ function vdsfile_handler_2(opt){
             if(result.length === 0){
                 console.log('no imputed file output, push to queue')
                 // throw new Error('die')
-                file_queue.push({'file':f
-                                ,'opts':opt
-                                }
-                               ,function(){
-                                    console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
-                                    return null
-                                })
+                file_queue.defer(trigger_R_job,{'file':f
+                                               ,'opts':opt
+                                               })
             }else{
                 console.log('already done: '+result)
             }
@@ -125,21 +126,44 @@ function vdsfile_handler_2(opt){
 }
 
 
-var years = [2010]//,2011];
+var years = [2012]//,2011];
 
-var districts = [// 'D12'
+var districts = ['D12'
                 // ,
     // did these during debugging
-                 'D03'
-                ,'D04'
-                ,'D05'
-                ,'D06'
-                ,'D07'
-                ,'D08'
-                ,'D10'
-                ,'D11'
+                // , 'D03'
+                // ,'D04'
+                // ,'D05'
+                // ,'D06'
+                // ,'D07'
+                // ,'D08'
+                // ,'D10'
+                // ,'D11'
                 ]
 
+
+function year_district_handler(opt,callback){
+    // get the files, load the queue
+    var handler = vdsfile_handler_2(opt)
+    console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
+    get_files.get_yearly_vdsfiles_local(
+        {district:opt.env['RDISTRICT']
+        ,year:opt.env['RYEAR']}
+      ,function(err,list){
+           if(err) throw new Error(err)
+           console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
+           var fileq = queue(5);
+           list.forEach(function(f,idx){
+               console.log('pushed ',f)
+               fileq.defer(handler,f)
+               return null
+           });
+           fileq.await(function(e){
+               return callback(e)
+           })
+           return null
+       })
+}
 
 
 var RCall = ['--no-restore','--no-save','vds_impute.R']
@@ -148,37 +172,24 @@ var RCall = ['--no-restore','--no-save','vds_impute.R']
 var opts = { cwd: undefined,
              env: process.env
            }
-var years_districts = []
-_.each(years,function(year){
-    _.each(districts,function(district){
+var ydq = queue(1);
+years.forEach(function(year){
+    districts.forEach(function(district){
         var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
-        years_districts.push(o)
+        ydq.defer(year_district_handler,o)
+        return null
     })
-});
+    return null
+})
 
-
-async.eachSeries(years_districts
-            ,function(opt,ydcb){
-                 // get the files, load the queue
-                 var handler = vdsfile_handler_2(opt)
-                 console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
-                 get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
-                                                     ,year:opt.env['RYEAR']}
-                                                    ,function(err,list){
-                                                         if(err) throw new Error(err)
-                                                         console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-                                                         async.eachSeries(list
-                                                                     ,handler
-                                                                     ,ydcb);
-                                                         return null
-                                                     });
-
-             });
-
-
-
+ydq.await(function(){
+    // finished loading up all of the files into the file_queue, so
+    // set the await on that
+    file_queue.await(file_queue_drain);
+    return null
+})
 
 
 1;
