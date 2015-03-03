@@ -10,6 +10,7 @@ var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
 var num_CPUs = require('os').cpus().length;
+// num_CPUs=1 // while testing
 
 var statedb = 'vdsdata%2ftracking'
 
@@ -47,7 +48,6 @@ var trigger_R_job = function(task,done){
     R.stderr.pipe(logstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',wim)
-        // throw new Error('die')
         return done()
     })
 }
@@ -57,7 +57,7 @@ file_queue.drain =function(){
     return null
 }
 
-var years = [2010]//,2011];
+var years = [2012]//,2011];
 
 var RCall = ['--no-restore','--no-save','wim_impute.R']
 
