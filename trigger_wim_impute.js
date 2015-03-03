@@ -74,9 +74,26 @@ var config={}
 
 _.each(years,function(year){
     wim_sites({'year':year
-              ,'config_file':config_file}
-             ,function(e,r){
-        console.log(r)
+               ,'config_file':config_file}
+              ,function(e,r){
+
+                  // // hack to force a few detectors to be redone
+                  // r.rows = [{ id: 'wim.12.S ',  key: [ 2010, 'nothing', '12' ,'S'  ], value: null }
+                  //          ,{ id: 'wim.28.N ', key: [ 2010, 'nothing', '28' ,'N' ], value: null }
+                  //          ,{ id: 'wim.23.W ', key: [ 2010, 'nothing', '23' ,'W'  ], value: null }
+                  //          ,{ id: 'wim.108.S', key: [ 2010, 'nothing', '108','S' ], value: null }
+                  //          ,{ id: 'wim.36.E ', key: [ 2010, 'nothing', '36' ,'E'  ], value: null }
+                  //          ,{ id: 'wim.30.S ', key: [ 2010, 'nothing', '30' ,'S'  ], value: null }
+                  //          ,{ id: 'wim.27.S ', key: [ 2010, 'nothing', '27' ,'S'  ], value: null }
+                  //          ,{ id: 'wim.27.N ', key: [ 2010, 'nothing', '27' ,'N'  ], value: null }
+                  //          ,{ id: 'wim.26.E ', key: [ 2010, 'nothing', '26' ,'E'  ], value: null }
+                  //          ,{ id: 'wim.43.E ', key: [ 2010, 'nothing', '43' ,'E'  ], value: null }
+                  //          ,{ id: 'wim.22.W ', key: [ 2010, 'nothing', '22' ,'W'  ], value: null }
+                  //          ,{ id: 'wim.113.E', key: [ 2010, 'nothing', '113','E' ], value: null }
+                  //          ]
+
+                  console.log("loaded r.rows of length "+r.rows.length)
+
         _.each(r.rows,function(row){
             var w = row.key[2]
             if(unique_wim[w+year] === undefined){
