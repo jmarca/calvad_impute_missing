@@ -74,9 +74,10 @@ var config={}
 var sites = wim_sites.sites
 years.forEach(function(year){
     sites.forEach(function(site){
+        console.log(site.site,year)
         var _opts = _.clone(opts)
-        if(unique_wim[site+year] === undefined){
-            unique_wim[site+year] = 1
+        if(unique_wim[site.site+year] === undefined){
+            unique_wim[site.site+year] = 1
             _opts.wim=site.site
             _opts.year=year
 
