@@ -15,8 +15,8 @@ con <-  dbConnect(m
                   ,host=psqlenv[1]
                   ,dbname="spatialvds")
 
-source('components/jmarca-rstats_couch_utils/couchUtils.R',chdir=TRUE)
-source('components/jmarca-calvad_rscripts/lib/process.wim.site.R',chdir=TRUE)
+source('node_modules/rstats_couch_utils/couchUtils.R',chdir=TRUE)
+source('node_modules/calvad_rscripts/lib/process.wim.site.R',chdir=TRUE)
 
 seconds <- 3600
 
