@@ -7,18 +7,19 @@
     "test": "test"
   },
   "dependencies": {
-    "superagent": "",
     "async": "",
-    "glob": "",
-    "lodash": "",
-    "pg":"",
-    "suss_detector_id" : "jmarca/suss_detector_id.git",
+    "calvad_rscripts": "jmarca/calvad_rscripts",
+    "calvad_wim_sites": "jmarca/calvad_wim_sites",
     "couch_check_state": "jmarca/couch_check_state.git",
     "couch_set_state": "jmarca/couch_set_state.git",
-    "calvad_wim_sites":"jmarca/calvad_wim_sites",
-    "calvad_rscripts":"jmarca/calvad_rscripts",
-    "rstats_couch_utils":"jmarca/rstats_couch_utils",
-    "rstats_remote_files":"jmarca/rstats_remote_files"
+    "glob": "",
+    "lodash": "",
+    "pg": "",
+    "queue-async": "^1.0.7",
+    "rstats_couch_utils": "jmarca/rstats_couch_utils",
+    "rstats_remote_files": "jmarca/rstats_remote_files",
+    "superagent": "",
+    "suss_detector_id": "jmarca/suss_detector_id.git"
   },
   "devDependencies": {
     "should": ""
