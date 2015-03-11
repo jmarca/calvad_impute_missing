@@ -12,6 +12,9 @@ var couch_check = require('couch_check_state')
 
 var num_CPUs = require('os').cpus().length;
 
+// for testing, just one process at a time
+// num_CPUs=1
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
@@ -31,27 +34,27 @@ var trigger_R_job = function(task,done){
     var file = task.file
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
+
     opts.env['FILE']=file
 
-    console.log('processing ',opts)
+    console.log('processing ',file)
 
-    // var R  = spawn('Rscript', RCall, opts);
-    // R.stderr.setEncoding('utf8')
-    // R.stdout.setEncoding('utf8')
-    // var logfile = 'log/vdsimpute_'+did+'_'+opts.env['RYEAR']+'.log'
-    // var logstream = fs.createWriteStream(logfile
-    //                                     ,{flags: 'a'
-    //                                      ,encoding: 'utf8'
-    //                                      ,mode: 0666 })
-    // R.stdout.pipe(logstream)
-    // R.stderr.pipe(logstream)
-    // R.on('exit',function(code){
-    //     console.log('got exit: '+code+', for ',did)
-    //     // throw new Error('die')
-    //     return done()
-    // })
-    // for testing, just do nothing
-    return done()
+    var R  = spawn('Rscript', RCall, opts);
+    R.stderr.setEncoding('utf8')
+    R.stdout.setEncoding('utf8')
+    var logfile = 'log/vdsimpute_'+did+'_'+opts.env['RYEAR']+'.log'
+    var logstream = fs.createWriteStream(logfile
+                                        ,{flags: 'a'
+                                         ,encoding: 'utf8'
+                                         ,mode: 0666 })
+    R.stdout.pipe(logstream)
+    R.stderr.pipe(logstream)
+    R.on('exit',function(code){
+        console.log('got exit: '+code+', for ',did)
+        //throw new Error('die')
+        return done()
+    })
+    // return done()
 }
 var file_queue=queue(num_CPUs)
 // async.queue(trigger_R_job,num_CPUs)
@@ -62,6 +65,7 @@ var file_queue_drain =function(){
 }
 
 function vdsfile_handler(opt){
+    // this checks couchdb
     return function(f,cb){
         var did = suss_detector_id(f)
 
@@ -74,14 +78,10 @@ function vdsfile_handler(opt){
                         if(err) return cb(err)
                         console.log({file:f,state:state})
                         if( !state || !_.isArray(state) ){
-                            console.log('push to queue')
-                            file_queue.push({'file':f
-                                            ,'opts':opt
-                                            }
-                                           ,function(){
-                                                console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
-                                                return null
-                                            })
+                            console.log('queue up for processing')
+                            file_queue.defer(trigger_R_job,{'file':f
+                                                            ,'opts':opt
+                                                           });
                         }
                         return cb()
                     });
@@ -94,6 +94,7 @@ var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
 
 function vdsfile_handler_2(opt){
+    // this checks the file system for an RData file
     var district = opt.env['RDISTRICT']
     var year=opt.env['RYEAR']
     var searchpath = [root,district].join('/')
@@ -101,7 +102,7 @@ function vdsfile_handler_2(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
         var pattern = ["**/"+did+"_ML_",year,"*imputed.RData"].join('')
-        console.log(pattern)
+        // console.log(pattern)
         glob(pattern,{cwd:searchpath,dot:true},function(err,result){
 
             if(err){
@@ -128,7 +129,7 @@ function vdsfile_handler_2(opt){
 
 var years = [2012]//,2011];
 
-var districts = ['D12'
+var districts = ['D10'
                 // ,
     // did these during debugging
                 // , 'D03'
@@ -144,6 +145,9 @@ var districts = ['D12'
 
 function year_district_handler(opt,callback){
     // get the files, load the queue
+
+    // this handler, vdsfile_handler_2, will check the file system for
+    // "imputed.RData" to see if this detector is done
     var handler = vdsfile_handler_2(opt)
     console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles_local(

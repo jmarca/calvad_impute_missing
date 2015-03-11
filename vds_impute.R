@@ -10,13 +10,11 @@ library('lattice')
 library('RCurl')
 library('RJSONIO')
 
-## source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
-source('components/jmarca-rstats_couch_utils/couchUtils.R',chdir=TRUE)
+source('node_modules/rstats_couch_utils/couchUtils.R',chdir=TRUE)
 ##source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
-## source('components/jmarca-calvad_rscripts/lib/get.medianed.amelia.vds.R')
-## source('components/jmarca-calvad_rscripts/lib/amelia_plots_and_diagnostics.R')
-source('components/jmarca-calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
+source('node_modules/calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
+
 
 library('RPostgreSQL')
 m <- dbDriver("PostgreSQL")
@@ -25,7 +23,6 @@ psqlenv = Sys.getenv(c("PSQL_HOST", "PSQL_USER", "PSQL_PASS"))
 
 con <-  dbConnect(m
                   ,user=psqlenv[2]
-                  ,password=psqlenv[3]
                   ,host=psqlenv[1]
                   ,dbname="spatialvds")
 
@@ -48,7 +45,7 @@ if(is.null(year)){
   exit(1)
 }
 
-server <- "http://calvad.ctmlabs.net"
+server <- "http://localhost/calvad"
 vds.service <- 'vdsdata'
 
 
@@ -65,10 +62,10 @@ if(is.null(maxiter)){
     maxiter=300
 }
 path = paste(pems.root,district,sep='')
-goodfactor <-   3.5
-seconds = 120
 file <- paste(path,file,sep='/')
 print(file)
+goodfactor <-   3.5
+seconds = 120
 ## using maxiter must be a number, not string
 ## so the env var is irritating.  Hard code at 20 for now
 
