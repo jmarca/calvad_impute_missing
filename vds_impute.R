@@ -11,7 +11,6 @@ library('RCurl')
 library('RJSONIO')
 
 source('node_modules/rstats_couch_utils/couchUtils.R',chdir=TRUE)
-##source('components/jmarca-rstats_remote_files/remoteFiles.R')
 
 source('node_modules/calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
 
