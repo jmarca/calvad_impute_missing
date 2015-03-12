@@ -5,12 +5,31 @@ routines
 
 # Overview
 
-This code should be run on raw PeMS and WIM data, but after that data
-has been broken up into detector-specific files, using the perl
-program `breakup_pems_raw.pl` in the repository called `bdp` (which
-stands for bulk download pems).
+This code imputes missing values in VDS (PeMS) and WIM data.
 
 The instructions below step through how to run this code.
+
+# Prerequisites
+
+Before anything can be done here, the analyst must first download and
+extract the VDS and WIM observations.
+
+The WIM data is available from Caltrans.  The binary files must be
+extracted as ASCII records and then loaded into the PostgreSQL
+database.  The WIM status spreadsheets must also have been processed
+and stored in the PostgreSQL database.
+
+The VDS 30-second loop detector data is available from Caltrans' PeMS
+website.  The daily 30-second files and the detector metadata should
+be downloaded.  PeMS data is made available as daily summaries of all
+detectors by district.  These files need to be processed and
+transposed, so that there is one file per detector per year, rather
+than many detectors in one file per day.
+
+The detector metadata needs to be processed and stored in the
+PostgreSQL database.  The PeMS data should be stored in the file
+system, and then broken up into the one-file-per-detector format.
+
 
 # Process the PeMS broken up data with R processing code
 
@@ -46,12 +65,24 @@ npm install
 ```
 
 I have one test that makes sure that the program can get files from
-the data repository that serves up the broken-up PeMS files.
+the data repository that serves up the broken-up PeMS files.  This
+functionality is not strictly necessary if you will be using files
+stored on the local file system.  To run these tests and prepare for
+running the program on real data, you need to set some environment
+variables.
+
+# settings
+
+*Soon to change*
+
+(This will soon change to using a configuration file, config.json)
+
+
 The server is defined using the environment variables:
 
 ```
-var server = process.env.CALVAD_FILE_SERVER || 'http://calvad.ctmlabs.net'
-var port = process.env.CALVAD_FILE_PORT || 80
+CALVAD_FILE_SERVER = 'http://lysithia.its.uci.edu'
+CALVAD_FILE_PORT = 80
 ```
 
 The default is to get the files from https://calvad.ctmlabs.net, which
@@ -71,34 +102,60 @@ mocha test --timeout 5000
 Increase the timeout if you have a slow network connection or the test
 times out.
 
-## R dependencies
+# R dependencies
 
 The R code of course requires R, as well as many packages like Amelia
-and Zoo.  The best way to make sure that your R environment has all
-the dependencies is to just try to run the code and see where it crashes.
+and Zoo.  One perfect way to make sure that your R environment has all
+the dependencies is to just try to run the code in an interactive R
+session and see where it crashes.
 
-To get the R dependencies, you need to have the node program called
-`component` installed.  Install it using npm like so:
+
+## CalVAD R code
+
+Previously, I was using component to install R dependencies, with the
+ambition of packaging all of the files into a single R file.  That
+didn't work as well as planned, so I've switched to using npm.  All of
+*my* R libraries should have been installed automatically from github
+using the prior `npm install` command.
+
+## CRAN R code
+
+There are many packages that are used from the Comprehensive R Archive
+Network, and others that can be loaded from github directly using the
+R devtools package.
+
+Aside from devtools itself, at the moment the required R packages can
+be loaded using CRAN versions.  The list of R packages follows.
 
 ```
-npm install -g component
+install.packages(
+    c('Amelia',
+      'Hmisc',
+      'MASS',
+      'MBA',
+      'OpenStreetMap',
+      'RCurl',
+      'RJSONIO',
+      'RPostgreSQL',
+      'Zelig',
+      'animation',
+      'cluster',
+      'doMC',
+      'fields',
+      'ggplot2',
+      'lattice',
+      'maps',
+      'mgcv',
+      'plyr',
+      'read.ogr',
+      'sp',
+      'spBayes',
+      'spTimer',
+      'spatial',
+      'testthat',
+      'zoo'))
 ```
 
-You might need to run that as `sudo`, depending on your node setup.
-
-Once component is installed, use it to download the dependencies from
-my github repository like so:
-
-```
-component install
-```
-
-This will hit github and download the dependencies listed in
-`component.json` into a subdirectory called `components`.  The R
-scripts expect to find the code there.  Note that component is only
-used here for its ability to download listed dependencies from github.
-
-## TODO, sort out a way to identify the required R packages
 
 
 # Running the imputations

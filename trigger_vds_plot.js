@@ -1,9 +1,10 @@
+/*global require process console */
 
 var util  = require('util'),
     spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var async = require('async');
+var queue = require('queue-async');
 var _ = require('lodash');
 var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
@@ -11,9 +12,13 @@ var couch_check = require('couch_check_state')
 
 var num_CPUs = require('os').cpus().length;
 
+// for testing, just one process at a time
+// num_CPUs=1
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
+
 
 /**
  * mimic the refactor from trigger_vds_impute
@@ -25,10 +30,12 @@ var R;
 
 var trigger_R_job = function(task,done){
     var file = task.file
-    console.log('processing '+file)
     var did = suss_detector_id(file)
     var opts = _.clone(task.opts)
+
     opts.env['FILE']=file
+
+    console.log('processing ',file)
 
     var R  = spawn('Rscript', RCall, opts);
     R.stderr.setEncoding('utf8')
@@ -46,13 +53,16 @@ var trigger_R_job = function(task,done){
         return done()
     })
 }
-var file_queue=async.queue(trigger_R_job,num_CPUs)
-file_queue.drain =function(){
+var file_queue=queue(num_CPUs)
+// async.queue(trigger_R_job,num_CPUs)
+
+var file_queue_drain =function(){
     console.log('queue drained')
     return null
 }
 
 function vdsfile_handler(opt){
+    // this checks couchdb
     return function(f,cb){
         var did = suss_detector_id(f)
 
@@ -65,15 +75,9 @@ function vdsfile_handler(opt){
                         if(err) return cb(err)
                         if(!state){
                             console.log('push to queue '+f)
-                            file_queue.push({'file':f
-                                            ,'opts':opt
-                                            }
-                                           ,function(){
-                                                console.log('file '+f+' done, ' + file_queue.length()+' files remaining')
-                                                return null
-                                            })
-                        }else{
-                            console.log('done with '+f)
+                            file_queue.defer(trigger_R_job,{'file':f
+                                                           ,'opts':opt
+                                                           });
                         }
                         return cb()
                     });
@@ -82,19 +86,47 @@ function vdsfile_handler(opt){
 }
 
 
-var years = [2010];
+var years = [2012]//,2011];
 
-var districts = ['D03'
-                ,'D04'
-                ,'D05'
-                ,'D06'
-                ,'D07'
-                ,'D08'
-                ,'D10'
-                ,'D11'
-                ,'D12'
+var districts = ['D10'
+                // ,
+    // did these during debugging
+                // , 'D03'
+                // ,'D04'
+                // ,'D05'
+                // ,'D06'
+                // ,'D07'
+                // ,'D08'
+                // ,'D10'
+                // ,'D11'
                 ]
 
+
+function year_district_handler(opt,callback){
+    // get the files, load the queue
+
+    // this handler, vdsfile_handler_2, will check the file system for
+    // "imputed.RData" to see if this detector is done
+    var handler = vdsfile_handler(opt)
+    console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
+    get_files.get_yearly_vdsfiles_local(
+        {district:opt.env['RDISTRICT']
+        ,year:opt.env['RYEAR']}
+      ,function(err,list){
+           if(err) throw new Error(err)
+           console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
+           var fileq = queue(5);
+           list.forEach(function(f,idx){
+               console.log('pushed ',f)
+               fileq.defer(handler,f)
+               return null
+           });
+           fileq.await(function(e){
+               return callback(e)
+           })
+           return null
+       })
+}
 
 var RCall = ['--no-restore','--no-save','vds_plots.R']
 
@@ -102,46 +134,23 @@ var RCall = ['--no-restore','--no-save','vds_plots.R']
 var opts = { cwd: undefined,
              env: process.env
            }
-var years_districts = []
-_.each(years,function(year){
-    _.each(districts,function(district){
+var ydq = queue(1);
+years.forEach(function(year){
+    districts.forEach(function(district){
         var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
-        years_districts.push(o)
+        ydq.defer(year_district_handler,o)
+        return null
     })
-});
+    return null
+})
 
-async.eachSeries(years_districts
-                ,function(opt,ydcb){
-                     // get the files
-                     var handler = vdsfile_handler(opt)
-                     console.log('checking '+opt.env['RDISTRICT']+' '+opt.env['RYEAR'])
-                     get_files.get_yearly_vdsfiles_local({'district':opt.env['RDISTRICT']
-                                                         ,'year':opt.env['RYEAR']
-                                                          //,'rdata':1
-                                                         }
-                                                        ,function(err,list){
-                                                             if(err){
-                                                                 console.log('got error, throwing')
-                                                                 throw new Error(err)
-                                                             }
-                                                             console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-
-
-                                                             // testing short circuit
-                                                             //list = ['275/W/275WB->50WB/314530_ML_2010.txt.xz']
-
-                                                             async.eachSeries(list
-                                                                             ,handler
-                                                                             ,ydcb)
-                                                             return null
-                                                             //return ydcb()
-                                                         })
-                 },
-                 function(){
-                     console.log('done with each (year, district) combination')
-                     return null
-                 })
+ydq.await(function(){
+    // finished loading up all of the files into the file_queue, so
+    // set the await on that
+    file_queue.await(file_queue_drain);
+    return null
+})
 
 1;
