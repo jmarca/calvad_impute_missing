@@ -156,7 +156,7 @@ function year_district_handler(opt,callback){
       ,function(err,list){
            if(err) throw new Error(err)
            console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-           var fileq = queue(5);
+           var fileq = queue(1);
            list.forEach(function(f,idx){
                console.log('pushed ',f)
                fileq.defer(handler,f)
