@@ -18,8 +18,9 @@ source('node_modules/calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
 library('RPostgreSQL')
 m <- dbDriver("PostgreSQL")
 ## requires environment variables be set externally
-psqlenv = Sys.getenv(c("PSQL_HOST", "PSQL_USER", "PSQL_PASS"))
+psqlenv = Sys.getenv(c("PSQL_HOST", "PSQL_USER"))
 
+## this connection call assumes you are using .pgass, as you should be!
 con <-  dbConnect(m
                   ,user=psqlenv[2]
                   ,host=psqlenv[1]
