@@ -130,18 +130,18 @@ function vdsfile_handler_2(opt){
 
 var years = [2012]//,2011];
 
-var districts = ['D10'
-                // ,
-    // did these during debugging
-                // , 'D03'
-                // ,'D04'
-                // ,'D05'
-                // ,'D06'
-                // ,'D07'
-                // ,'D08'
-                // ,'D10'
-                // ,'D11'
-                ]
+var districts = [//
+    // 'D03'
+    // ,'D04'
+    // ,'D05'
+    // ,'D06'
+    // ,'D07'
+    // ,'D08'
+    // ,'D10'  // done
+    //,
+    'D11'
+    // ,'D12'
+]
 
 
 function year_district_handler(opt,callback){
