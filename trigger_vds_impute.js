@@ -36,7 +36,7 @@ var trigger_R_job = function(task,done){
     var opts = _.clone(task.opts)
 
     opts.env['FILE']=file
-
+    opts.env['CALVAD_PEMS_ROOT']=pems_root
     console.log('processing ',file)
 
     var R  = spawn('Rscript', RCall, opts);
@@ -91,6 +91,7 @@ function vdsfile_handler(opt){
 var glob = require('glob')
 
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
+
 var root = path.normalize(pems_root)
 
 function vdsfile_handler_2(opt){
