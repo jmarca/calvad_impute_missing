@@ -134,8 +134,8 @@ function vdsfile_handler_2(opt){
 var years = [2012]//,2011];
 
 var districts = [
-                'D03'
-                //, 'D04' 
+                // 'D03' // done
+                 'D04' 
                 // ,'D05'
                 // ,'D06'
                 // ,'D07'
