@@ -47,8 +47,12 @@ var trigger_R_job = function(task,done){
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
                                          ,mode: 0666 })
+    var errstream = fs.createWriteStream(logfile
+                                        ,{flags: 'a'
+                                         ,encoding: 'utf8'
+                                         ,mode: 0666 })
     R.stdout.pipe(logstream)
-    R.stderr.pipe(logstream)
+    R.stderr.pipe(errstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',did)
         //throw new Error('die')
