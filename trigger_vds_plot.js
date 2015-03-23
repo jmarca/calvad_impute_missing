@@ -15,6 +15,9 @@ var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 // for testing, just one process at a time
 num_CPUs=1
 
+var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
+var root = path.normalize(pems_root)
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
