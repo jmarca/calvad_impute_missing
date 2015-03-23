@@ -9,14 +9,13 @@ library('lattice')
 library('RCurl')
 library('RJSONIO')
 
-## source("components/jmarca-calvad_rscripts/lib/vds.processing.functions.R")
-source('components/jmarca/rstats_couch_utils/master/couchUtils.R',chdir=TRUE)
-##source('components/jmarca-rstats_remote_files/remoteFiles.R')
+source('node_modules/rstats_couch_utils/couchUtils.R',chdir=TRUE)
 
-source('components/jmarca/calvad_rscripts/master/lib/get.medianed.amelia.vds.R',chdir=TRUE)
-source('components/jmarca/calvad_rscripts/master/lib/amelia_plots_and_diagnostics.R',chdir=TRUE)
+source('node_modules/calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
 
-source('components/jmarca/calvad_rscripts/master/lib/vds_impute.R',chdir=TRUE)
+source('node_modules/calvad_rscripts/lib/get.medianed.amelia.vds.R',chdir=TRUE)
+source('node_modules/calvad_rscripts/lib/amelia_plots_and_diagnostics.R',chdir=TRUE)
+
 
 plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE){
   ## plot the data out of the detector
@@ -83,9 +82,6 @@ if(is.null(year)){
   print('assign the year to process to the RYEAR environment variable')
   exit(1)
 }
-
-server <- "http://calvad.ctmlabs.net"
-vds.service <- 'vdsdata'
 
 file.names <- strsplit(thefile,split="/")
 file.names <- file.names[[1]]
