@@ -10,6 +10,7 @@ var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
+var force_plot = process.env.CALVAD_FORCE_PLOT
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // for testing, just one process at a time
@@ -38,6 +39,7 @@ var trigger_R_job = function(task,done){
 
     opts.env['FILE']=file
     opts.env['CALVAD_PEMS_ROOT']=pems_root
+    opts.env['CALVAD_FORCE_PLOT']=force_plot
     console.log('processing ',file)
 
     var R  = spawn('Rscript', RCall, opts);
