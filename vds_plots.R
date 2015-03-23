@@ -102,12 +102,15 @@ path = paste(pems.root,district,sep='/')
 file <- paste(path,file,sep='/')
 print(file)
 
-force.plot = sys.getenv(c('CALVAD_FORCE_PLOT'))[1]
-if(is.null(force.plot)){
+force.plot = Sys.getenv(c('CALVAD_FORCE_PLOT'))[1]
+if(is.null(force.plot) || force.plot==0 || force.plot == 'false'){
     force.plot = FALSE
+}else{
+    force.plot=TRUE
 }
-result <- plot.raw.data(fname,thefile,path,year,vds.id,force.plot=force.plot)
+print(paste('force plot = ',force.plot))
+result <- plot.raw.data(fname,thefile,path,year,vds.id)#,force.plot=force.plot)
 
-result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
+result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE,force.plot=force.plot)
 
 quit(save='no',status=10)
