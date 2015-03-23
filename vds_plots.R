@@ -71,8 +71,8 @@ if(is.null(district)){
   exit(1)
 }
 
-thefile = Sys.getenv(c('FILE'))[1]
-if(is.null(thefile)){
+file = Sys.getenv(c('FILE'))[1]
+if(is.null(file)){
   print('assign a file to process to the FILE environment variable')
   exit(1)
 }
@@ -83,22 +83,28 @@ if(is.null(year)){
   exit(1)
 }
 
-file.names <- strsplit(thefile,split="/")
+server <- "http://localhost/calvad"
+vds.service <- 'vdsdata'
+
+
+
+district.path=paste(district,'/',sep='')
+
+file.names <- strsplit(file,split="/")
 file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
 
 vds.id <-  get.vdsid.from.filename(fname)
 pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
 path = paste(pems.root,district,sep='/')
-thefile <- paste(path,thefile,sep='/')
-print(thefile)
+file <- paste(path,file,sep='/')
+print(file)
 
-result <- plot.raw.data(fname,thefile,path,year,vds.id)
+result <- plot.raw.data(fname,file,path,year,vds.id)
 
 have.plot <- check.for.plot.attachment(vds.id,year,NULL,subhead='\npost imputation')
 if(! have.plot ){
     print('going to plot amelia output diagnostics with remote = false')
-  result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
+    result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
 }
-1
 quit(save='no',status=10)
