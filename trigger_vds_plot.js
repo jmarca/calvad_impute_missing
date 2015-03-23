@@ -63,6 +63,11 @@ function vdsfile_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
 
+        console.log({'db':statedb
+                     ,'doc':did
+                     ,'year':'_attachments'
+                     ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
+                    })
         couch_check({'db':statedb
                      ,'doc':did
                      ,'year':'_attachments'
@@ -70,15 +75,19 @@ function vdsfile_handler(opt){
                     }
                     ,function(err,state){
                         if(err) return cb(err)
-                        if(!state){
+                        console.log(state)
+                        //if(!state){
                             console.log('push to queue '+f)
                             trigger_R_job({'file':f
                                            ,'opts':opt
-                                          },cb);
-                        }else{
-                            console.log('already done')
-                            cb() // move on to the next
-                        }
+},function(){
+    throw new Error('die now in testing')
+});
+                        //                  },cb);
+                        //}else{
+                        //    console.log('already done')
+                        //    cb() // move on to the next
+                        //}
                         return null
                     });
         return null
@@ -95,7 +104,7 @@ var districts = [
                 //,'D06' //
                 // ,'D07' //
                 // 'D08' //
-     ,'D10' // in progress
+    'D10' // apparently already done
                 // ,'D11' //
                 // ,'D12' //
 ]

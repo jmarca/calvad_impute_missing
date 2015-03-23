@@ -15,6 +15,9 @@ var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 // on lysithia, don't go over 3
 // num_CPUs=1
 
+var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
+var root = path.normalize(pems_root)
+
 var statedb = 'vdsdata%2ftracking'
 
 var R;
@@ -89,10 +92,6 @@ function vdsfile_handler(opt){
     }
 }
 var glob = require('glob')
-
-var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
-
-var root = path.normalize(pems_root)
 
 function vdsfile_handler_2(opt){
     // this checks the file system for an RData file
