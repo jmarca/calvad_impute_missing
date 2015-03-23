@@ -134,15 +134,15 @@ function vdsfile_handler_2(opt){
 var years = [2012]//,2011];
 
 var districts = [
-                // 'D03' // done 2012
-                // 'D04' // done 2012
-                //'D05' // done 2012
-                //,'D06' // done 2012
-                // ,'D07' // done 2012 activimetrics
-                // 'D08' // done 2012
-                // ,'D10' // done
-                // ,'D11' // done
-                // ,'D12' // done
+                // 'D03' //
+                // 'D04' //
+                //'D05' //
+                //,'D06' //
+                // ,'D07' //
+                // 'D08' //
+                // ,'D10' //
+                // ,'D11' //
+                'D12' //
 ]
 
 
