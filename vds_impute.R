@@ -2,7 +2,6 @@
 ## loaded and parsed and saved as a dataframe, or else the existing
 ## dataframe will get loaded.  In either case, the plots will get made
 ## and saved to couchdb
-## source("components/jmarca-calvad_rscripts/lib/load.pems.raw.file.R")
 library('zoo')
 ## library('Hmisc')
 library('Amelia')
