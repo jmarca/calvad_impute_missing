@@ -102,9 +102,9 @@ print(file)
 
 result <- plot.raw.data(fname,file,path,year,vds.id)
 
-have.plot <- check.for.plot.attachment(vds.id,year,NULL,subhead='\npost imputation')
-if(! have.plot ){
+## have.plot <- check.for.plot.attachment(vds.id,year,NULL,subhead='\npost imputation')
+## if(! have.plot ){
     print('going to plot amelia output diagnostics with remote = false')
     result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
-}
+#}
 quit(save='no',status=10)
