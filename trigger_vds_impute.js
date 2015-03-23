@@ -60,8 +60,6 @@ var trigger_R_job = function(task,done){
     })
     // return done()
 }
-// var file_queue=queue(num_CPUs)
-// async.queue(trigger_R_job,num_CPUs)
 
 function vdsfile_handler(opt){
     // this checks couchdb
