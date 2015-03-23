@@ -17,14 +17,16 @@ source('node_modules/calvad_rscripts/lib/get.medianed.amelia.vds.R',chdir=TRUE)
 source('node_modules/calvad_rscripts/lib/amelia_plots_and_diagnostics.R',chdir=TRUE)
 
 
-plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE){
+plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE,force.plot=FALSE){
   ## plot the data out of the detector
   fileprefix='raw'
   subhead='raw data'
-  have.plot <- check.for.plot.attachment(vds.id,year,fileprefix,subhead)
-  if(have.plot){
-    print('already have plots')
-    return (1)
+  if(!force.plot){
+      have.plot <- check.for.plot.attachment(vds.id,year,fileprefix,subhead)
+      if(have.plot){
+          print('already have plots')
+          return (1)
+      }
   }
 
   ## fname is the filename for the vds data.
@@ -58,7 +60,7 @@ plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE){
   df.vds.agg$tod   <- ts.lt$hour + (ts.lt$min/60)
   df.vds.agg$day   <- ts.lt$wday
 
-  plot.vds.data(df.vds.agg,vds.id,year,fileprefix,subhead)
+  plot.vds.data(df.vds.agg,vds.id,year,fileprefix,subhead,force.plot=force.plot)
 
   rm(df)
   gc()
@@ -100,11 +102,12 @@ path = paste(pems.root,district,sep='/')
 file <- paste(path,file,sep='/')
 print(file)
 
-result <- plot.raw.data(fname,file,path,year,vds.id)
+force.plot = sys.getenv(c('CALVAD_FORCE_PLOT'))[1]
+if(is.null(force.plot)){
+    force.plot = FALSE
+}
+result <- plot.raw.data(fname,thefile,path,year,vds.id,force.plot=force.plot)
 
-## have.plot <- check.for.plot.attachment(vds.id,year,NULL,subhead='\npost imputation')
-## if(! have.plot ){
-    print('going to plot amelia output diagnostics with remote = false')
-    result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
-#}
+result <- get.and.plot.vds.amelia(vds.id,year=year,path=path,remote=FALSE)
+
 quit(save='no',status=10)
