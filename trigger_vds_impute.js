@@ -100,9 +100,14 @@ function vdsfile_handler_2(opt){
     // this checks the file system for an RData file
     var district = opt.env['RDISTRICT']
     var year=opt.env['RYEAR']
-    var searchpath = [root,district].join('/')
-
+    var path_pattern = /(.*\/).+$/;
     return function(f,cb){
+        
+        var re = path_pattern.exec(f)
+        var searchpath = [root,district].join('/')
+        if(re && re[1]){
+            searchpath = re[1]
+        }
         var did = suss_detector_id(f)
         var pattern = ["**/"+did+"_ML_",year,"*imputed.RData"].join('')
         // console.log(pattern)
