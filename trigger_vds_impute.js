@@ -100,15 +100,14 @@ function vdsfile_handler_2(opt){
     var year=opt.env['RYEAR']
     var path_pattern = /(.*\/).+$/;
     return function(f,cb){
-        
+
         var re = path_pattern.exec(f)
         var searchpath = [root,district].join('/')
         if(re && re[1]){
-            searchpath = re[1]
+            searchpath = path.normalize(searchpath+'/'+re[1])
         }
         var did = suss_detector_id(f)
         var pattern = ["**/"+did+"_ML_",year,"*imputed.RData"].join('')
-        // console.log(pattern)
         glob(pattern,{cwd:searchpath,dot:true},function(err,result){
 
             if(err){
@@ -120,7 +119,7 @@ function vdsfile_handler_2(opt){
             if(result.length === 0 ){
                 // && maxqueue
 		// maxqueue--
-                console.log('no imputed file output, push ',did,' to queue')
+                console.log('no imputed file output found under ',searchpath,', push ',did,' to queue')
                 // throw new Error('die')
                 trigger_R_job({'file':f
                                ,'opts':opt
@@ -160,7 +159,9 @@ function year_district_handler(opt,callback){
     console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles_local(
         {district:opt.env['RDISTRICT']
-        ,year:opt.env['RYEAR']}
+        ,year:opt.env['RYEAR']
+         //,searchpath:root
+        }
       ,function(err,list){
            if(err) throw new Error(err)
            console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
