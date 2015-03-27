@@ -72,7 +72,7 @@ seconds = 120
 ## by the way, 20 is from examining the first 2000 or so imputations
 ## and noticing that most are less than 20
 
-done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor,maxiter=20)
+done <- self.agg.impute.VDS.site.no.plots(fname,file,path,year,seconds=seconds,goodfactor=goodfactor,maxiter=20,con=con)
 if (done != 1){
   couch.set.state(year,vds.id,list('vdsraw_chain_lengths'=done))
 }
