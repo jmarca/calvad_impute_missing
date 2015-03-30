@@ -40,6 +40,7 @@ var trigger_R_job = function(task,done){
     opts.env['FILE']=file
     opts.env['CALVAD_PEMS_ROOT']=pems_root
     opts.env['CALVAD_FORCE_PLOT']=force_plot
+    opts.env['COUCHDB_TRACKINGDB']=statedb
     console.log('processing ',file)
 
     var R  = spawn('Rscript', RCall, opts);
