@@ -3,9 +3,7 @@
 ## dataframe will get loaded.  In either case, the plots will get made
 ## and saved to couchdb
 library('zoo')
-##library('Hmisc')
 library('Amelia')
-library('lattice')
 library('RCurl')
 library('RJSONIO')
 
@@ -14,7 +12,6 @@ source('node_modules/rstats_couch_utils/couchUtils.R',chdir=TRUE)
 source('node_modules/calvad_rscripts/lib/vds_impute.R',chdir=TRUE)
 
 source('node_modules/calvad_rscripts/lib/get.medianed.amelia.vds.R',chdir=TRUE)
-source('node_modules/calvad_rscripts/lib/amelia_plots_and_diagnostics.R',chdir=TRUE)
 
 
 plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE,force.plot=FALSE){
@@ -54,13 +51,15 @@ plot.raw.data <- function(fname,f,path,year,vds.id,remote=FALSE,force.plot=FALSE
   ## aggregate up to an hour?
   df.vds.agg <- vds.aggregate(df,ts,seconds=3600)
   if(is.null(dim(df.vds.agg))) return (FALSE)
-  ts <- df.vds.agg$ts
 
-  ts.lt <- as.POSIXlt(ts)
-  df.vds.agg$tod   <- ts.lt$hour + (ts.lt$min/60)
-  df.vds.agg$day   <- ts.lt$wday
+  files.to.couch <- plot.vds.data(df.vds.agg,
+                                  vds.id,year,
+                                  fileprefix,subhead,
+                                  force.plot=force.plot)
 
-  plot.vds.data(df.vds.agg,vds.id,year,fileprefix,subhead,force.plot=force.plot)
+  for(f2a in files.to.attach){
+      couch.attach('vdsdata%2ftracking',vds.id,f2a)
+  }
 
   rm(df)
   gc()
