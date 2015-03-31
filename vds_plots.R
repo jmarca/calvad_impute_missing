@@ -58,19 +58,19 @@ if(is.null(force.plot) || force.plot==0 || force.plot == 'false'){
     force.plot=TRUE
 }
 print(paste('force plot = ',force.plot))
-result <- plot.raw.data(fname,thefile,path,year,vds.id
+plot.raw.data(fname,thefile,path,year,vds.id
                        ,remote=FALSE
                        ,force.plot=force.plot
                        ,trackingdb=trackingdb)
 
-print(paste('done with raw plots, result is',result))
+print('done with raw plots')
 
-result <- get.and.plot.vds.amelia(vds.id,year=year,doplots=TRUE,
+get.and.plot.vds.amelia(vds.id,year=year,doplots=TRUE,
                                   remote=FALSE,
                                   path=path,
                                   force.plot=force.plot,
                                   trackingdb=trackingdb)
 
-print(paste('done with raw plots, result is',result))
+print('done with post impute plots')
 
 quit(save='no',status=10)
