@@ -14,7 +14,7 @@ var force_plot = true //process.env.CALVAD_FORCE_PLOT
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // for testing, just one process at a time
-num_CPUs=1
+// num_CPUs=1
 
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
@@ -86,10 +86,7 @@ function vdsfile_handler(opt){
                             console.log('push to queue '+f)
                             trigger_R_job({'file':f
                                            ,'opts':opt
-},function(){
-    throw new Error('die now in testing')
-});
-                        //                  },cb);
+                                          },cb);
                         //}else{
                         //    console.log('already done')
                         //    cb() // move on to the next
