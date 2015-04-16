@@ -1,10 +1,12 @@
 /components
 /images
 /imputed
-/config.json
 **/.RData
 **/.Rhistory
 *~
 /node_modules/
 /output/
 /.tern-port
+**/.cookies.txt
+**/test.config.json
+**/config.json

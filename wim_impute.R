@@ -63,7 +63,7 @@ done.sites <- c()
 
 returnval <- 0
 if(plot | impute){
-    returnval <- process.wim.site(wim.site=wim.site,year=year,preplot=plot,postplot=postplot,impute=impute,wim.path=wim.path)
+    returnval <- process.wim.site(wim.site=wim.site,year=year,preplot=plot,postplot=postplot,impute=impute,wim.path=wim.path,seconds=seconds)
 }
 if(postplot && returnval > 0){
     post.impute.plots(wim.site=wim.site,year=year,wim.path=wim.path)

@@ -2,14 +2,12 @@
 ## loaded and parsed and saved as a dataframe, or else the existing
 ## dataframe will get loaded.  In either case, the plots will get made
 ## and saved to couchdb
-library('zoo')
-library('Amelia')
-library('RCurl')
-library('RJSONIO')
 
-source('node_modules/rstats_couch_utils/couchUtils.R',chdir=TRUE)
-source('node_modules/calvad_rscripts/lib/get.medianed.amelia.vds.R',chdir=TRUE)
-
+config_file <- Sys.getenv('R_CONFIG')
+if(is.null(config_file)){
+    config_file <- 'config.json'
+}
+config <- rcouchutils::get.config(config_file)
 
 
 district = Sys.getenv(c('RDISTRICT'))[1]
@@ -30,8 +28,8 @@ if(is.null(year)){
   exit(1)
 }
 
-server <- "http://localhost/calvad"
-vds.service <- 'vdsdata'
+## server <- "http://localhost/calvad"
+## vds.service <- 'vdsdata'
 
 trackingdb <- Sys.getenv(c('COUCHDB_TRACKINGDB'))[1]
 if(is.null(trackingdb)){
@@ -57,20 +55,19 @@ if(is.null(force.plot) || force.plot==0 || force.plot == 'false'){
 }else{
     force.plot=TRUE
 }
-print(paste('force plot = ',force.plot))
-result <- plot.raw.data(fname,thefile,path,year,vds.id
-                       ,remote=FALSE
-                       ,force.plot=force.plot
-                       ,trackingdb=trackingdb)
 
-print(paste('done with raw plots, result is',result))
+result <- calvadrscripts::get.and.plot.vds.amelia(
+    vds.id,year=year,doplots=TRUE,
+    remote=FALSE,
+    path=path,
+    force.plot=force.plot,
+    trackingdb=trackingdb)
 
-result <- get.and.plot.vds.amelia(vds.id,year=year,doplots=TRUE,
-                                  remote=FALSE,
-                                  path=path,
-                                  force.plot=force.plot,
-                                  trackingdb=trackingdb)
+result <- calvadrscripts::plot.raw.data(
+    fname,thefile,path,year,vds.id
+   ,remote=FALSE
+   ,force.plot=force.plot
+   ,trackingdb=trackingdb)
 
-print(paste('done with raw plots, result is',result))
 
 quit(save='no',status=10)
