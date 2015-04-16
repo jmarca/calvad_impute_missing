@@ -14,7 +14,8 @@ unlink('./files/1211682_ML_2012.df.2012.RData')
 
 ## test database
 
-parts <- c('test','vds')
+parts <- c('test','vds','impute')
+result <- rcouchutils::couch.makedb(parts)
 
 context('impute missing data')
 test_that("vds impute works okay",{
@@ -33,7 +34,8 @@ test_that("vds impute works okay",{
         seconds=seconds,
         goodfactor=3.5,
         maxiter=20,
-        con=con)
+        con=con,
+        trackingdb=parts)
 
 
     expect_that(result,equals(1))
@@ -54,7 +56,15 @@ test_that("vds impute works okay",{
                                          'imputed.RData',
                                          sep='')))
 
+
+    saved.state.doc <- rcouchutils::couch.get(parts,vds.id)
+    saved.state <- saved.state.doc[[paste(year)]]$vdsraw_chain_lengths
+    expect_that(saved.state,is_a('numeric'))
+    expect_that(saved.state,
+                equals(c(3,3,3,3,3)))
+
 })
 
 
 unlink('./vds_hour_agg.1211682.2012.dat')
+rcouchutils::couch.deletedb(parts)

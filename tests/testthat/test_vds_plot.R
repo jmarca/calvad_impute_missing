@@ -1,7 +1,7 @@
 config <- rcouchutils::get.config(Sys.getenv('RCOUCHUTILS_TEST_CONFIG'))
 
 ## test database
-parts <- c('test','vds')
+parts <- c('test','vds','plots')
 result <- rcouchutils::couch.makedb(parts)
 
 test_that('can plot raw and imputed data',{
@@ -31,8 +31,8 @@ test_that('can plot raw and imputed data',{
 
     expect_that(min(df_agg$nl1,na.rm=TRUE),equals(0.0))
     ## print(sprintf("%0.10f",mean(df_agg$nl1,na.rm=TRUE)))
-    expect_that(mean(df_agg$nl1,na.rm=TRUE),equals(269.98356,tolerance = .0001))
-    expect_that(median(df_agg$nl1,na.rm=TRUE),equals(210))
+    expect_that(mean(df_agg$nl1,na.rm=TRUE),equals(269.98356,tolerance = .001))
+    expect_that(median(df_agg$nl1,na.rm=TRUE),equals(210,tolerance = .001))
     expect_that(max(df_agg$nl1,na.rm=TRUE),equals(1567))
 
     createdfiles <- dir(path='.',
@@ -69,6 +69,6 @@ test_that('can plot raw and imputed data',{
 
 
 
-## unlink('./files/1211682_ML_2012.120.imputed.RData')
-## unlink('./files/1211682_ML_2012.df.2012.RData')
+unlink('./files/1211682_ML_2012.120.imputed.RData')
+unlink('./files/1211682_ML_2012.df.2012.RData')
 rcouchutils::couch.deletedb(parts)
