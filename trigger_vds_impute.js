@@ -13,7 +13,7 @@ var couch_check = require('couch_check_state')
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // on lysithia, don't go over 3
-// num_CPUs=1
+num_CPUs=1
 
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
@@ -58,7 +58,7 @@ var trigger_R_job = function(task,done){
     R.stderr.pipe(errstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',did)
-        //throw new Error('die')
+        throw new Error('die')
         return done()
     })
     // return done()
@@ -135,7 +135,7 @@ var districts = [
                 // 'D04' // done 2012
                 //'D05' // done 2012
                 //,'D06' // done 2012
-                // ,'D07' // done 2012 activimetrics
+                'D07' // done 2012 activimetrics
                 // 'D08' // done 2012
                 // ,'D10' // done
                 // ,'D11' // done

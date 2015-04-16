@@ -8,13 +8,20 @@ path <- normalizePath(node_paths, winslash = "/", mustWork = FALSE)
 lib_paths <- .libPaths()
 .libPaths(c(path, lib_paths))
 
+print(.libPaths())
+
 ## need env for test file
 config_file <- Sys.getenv('R_CONFIG')
-if(is.null(config_file)){
+print(config_file)
+
+if(config_file ==  ''){
     config_file <- 'config.json'
 }
+print(config_file)
 config <- rcouchutils::get.config(config_file)
 
+print(config)
+stop('die')
 ## pass it the raw data details, and either the raw data will get
 ## loaded and parsed and saved as a dataframe, or else the existing
 ## dataframe will get loaded.  In either case, the plots will get made
@@ -30,19 +37,19 @@ con <-  dbConnect(m
 
 district = Sys.getenv(c('RDISTRICT'))[1]
 
-if(is.null(district)){
+if('' == district){
   print('assign a district to the RDISTRICT environment variable')
   exit(1)
 }
 
 file = Sys.getenv(c('FILE'))[1]
-if(is.null(file)){
+if('' == file){
   print('assign a file to process to the FILE environment variable')
   exit(1)
 }
 
 year = as.numeric(Sys.getenv(c('RYEAR'))[1])
-if(is.null(year)){
+if('' == year){
   print('assign the year to process to the RYEAR environment variable')
   exit(1)
 }
@@ -62,7 +69,7 @@ seconds = 120
 ## using maxiter must be a number, not string
 ## so the env var is irritating.  Hard code at 20 for now
 maxiter = Sys.getenv(c('CALVAD_VDS_IMPUTE_MAXITER'))[1]
-if(is.null(maxiter)){
+if('' == maxiter){
     maxiter=20
 }
 

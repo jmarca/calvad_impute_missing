@@ -185,3 +185,4 @@ run code from `calvad/strip_attachments_vdsdata_tracking`
 
 After imputing WIM and VDS, you have to merge pairs.  That is what I
 am working on now.
+find D07/60/W -name *2012.120.imputed.RData  -size +100k -delete
