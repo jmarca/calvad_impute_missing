@@ -12,16 +12,13 @@ print(.libPaths())
 
 ## need env for test file
 config_file <- Sys.getenv('R_CONFIG')
-print(config_file)
 
 if(config_file ==  ''){
     config_file <- 'config.json'
 }
-print(config_file)
+print(paste ('using config file =',config_file))
 config <- rcouchutils::get.config(config_file)
 
-print(config)
-stop('die')
 ## pass it the raw data details, and either the raw data will get
 ## loaded and parsed and saved as a dataframe, or else the existing
 ## dataframe will get loaded.  In either case, the plots will get made
@@ -59,7 +56,7 @@ district.path=paste(district,'/',sep='')
 file.names <- strsplit(file,split="/")
 file.names <- file.names[[1]]
 fname <-  strsplit(file.names[length(file.names)],"\\.")[[1]][1]
-vds.id <-  get.vdsid.from.filename(fname)
+vds.id <-  calvadrscripts::get.vdsid.from.filename(fname)
 pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
 path = paste(pems.root,district,sep='')
 file <- paste(path,file,sep='/')
@@ -72,7 +69,7 @@ maxiter = Sys.getenv(c('CALVAD_VDS_IMPUTE_MAXITER'))[1]
 if('' == maxiter){
     maxiter=20
 }
-
+print(maxiter)
 
 ## by the way, 20 is from examining the first 2000 or so imputations
 ## and noticing that most are less than 20
@@ -90,9 +87,9 @@ done <- calvadrscripts::self.agg.impute.VDS.site.no.plots(
     con=con,
     trackingdb=db)
 
-if (done != 1){
-    rcouchutils::couch.set.state(year,vds.id,
-                                 list('vdsraw_chain_lengths'=done),
-                                 db=db)
-}
+## if (done != 1){
+##     rcouchutils::couch.set.state(year,vds.id,
+##                                  list('vdsraw_chain_lengths'=done),
+##                                  db=db)
+## }
 quit(save='no',status=10)
