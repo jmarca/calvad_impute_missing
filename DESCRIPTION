@@ -1,0 +1,10 @@
+Package: calvadimputemissing
+Title: R and node.js to impute missing data
+Version: 1.0.1
+Authors@R: as.person(c("James Marca <jmarca@translab.its.uci.edu> [aut, cre]"))
+Description: The node and R necessary to impute missing data for CalVAD.
+Depends: R (>= 3.1.1)
+License: GPL-2
+LazyData: true
+Suggests: testthat
+Imports: RPostgreSQL

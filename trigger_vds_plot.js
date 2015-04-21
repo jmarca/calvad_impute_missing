@@ -10,10 +10,14 @@ var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
-var num_CPUs = require('os').cpus().length;
+var force_plot = process.env.CALVAD_FORCE_PLOT
+var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // for testing, just one process at a time
-// num_CPUs=1
+num_CPUs=1
+
+var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
+var root = path.normalize(pems_root)
 
 var statedb = 'vdsdata%2ftracking'
 
@@ -34,7 +38,9 @@ var trigger_R_job = function(task,done){
     var opts = _.clone(task.opts)
 
     opts.env['FILE']=file
-
+    opts.env['CALVAD_PEMS_ROOT']=pems_root
+    opts.env['CALVAD_FORCE_PLOT']=force_plot
+    opts.env['COUCHDB_TRACKINGDB']=statedb
     console.log('processing ',file)
 
     var R  = spawn('Rscript', RCall, opts);
@@ -45,20 +51,17 @@ var trigger_R_job = function(task,done){
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
                                          ,mode: 0666 })
+    var errstream = fs.createWriteStream(logfile
+                                        ,{flags: 'a'
+                                         ,encoding: 'utf8'
+                                         ,mode: 0666 })
     R.stdout.pipe(logstream)
-    R.stderr.pipe(logstream)
+    R.stderr.pipe(errstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',did)
         // throw new Error('die')
         return done()
     })
-}
-var file_queue=queue(num_CPUs)
-// async.queue(trigger_R_job,num_CPUs)
-
-var file_queue_drain =function(){
-    console.log('queue drained')
-    return null
 }
 
 function vdsfile_handler(opt){
@@ -66,20 +69,32 @@ function vdsfile_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
 
+        console.log({'db':statedb
+                     ,'doc':did
+                     ,'year':'_attachments'
+                     ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
+                    })
         couch_check({'db':statedb
-                    ,'doc':did
-                    ,'year':'_attachments'
-                    ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
+                     ,'doc':did
+                     ,'year':'_attachments'
+                     ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
                     }
-                   ,function(err,state){
+                    ,function(err,state){
                         if(err) return cb(err)
-                        if(!state){
+                        console.log(state)
+                        //if(!state){
                             console.log('push to queue '+f)
-                            file_queue.defer(trigger_R_job,{'file':f
-                                                           ,'opts':opt
-                                                           });
-                        }
-                        return cb()
+                            trigger_R_job({'file':f
+                                           ,'opts':opt
+},function(){
+    throw new Error('die now in testing')
+});
+                        //                  },cb);
+                        //}else{
+                        //    console.log('already done')
+                        //    cb() // move on to the next
+                        //}
+                        return null
                     });
         return null
     }
@@ -88,25 +103,23 @@ function vdsfile_handler(opt){
 
 var years = [2012]//,2011];
 
-var districts = ['D10'
-                // ,
-    // did these during debugging
-                // , 'D03'
-                // ,'D04'
-                // ,'D05'
-                // ,'D06'
-                // ,'D07'
-                // ,'D08'
-                // ,'D10'
-                // ,'D11'
-                ]
+var districts = [
+                // 'D03' //
+                // 'D04' //
+                //'D05' //
+                //,'D06' //
+                // ,'D07' //
+                // 'D08' //
+    'D10' // apparently already done
+                // ,'D11' //
+                // ,'D12' //
+]
 
 
 function year_district_handler(opt,callback){
     // get the files, load the queue
 
-    // this handler, vdsfile_handler_2, will check the file system for
-    // "imputed.RData" to see if this detector is done
+    // check if there is a plot file in couchdb
     var handler = vdsfile_handler(opt)
     console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles_local(
@@ -115,9 +128,9 @@ function year_district_handler(opt,callback){
       ,function(err,list){
            if(err) throw new Error(err)
            console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-           var fileq = queue(5);
+           var fileq = queue(num_CPUs);
            list.forEach(function(f,idx){
-               console.log('pushed ',f)
+               console.log('queue up ',f)
                fileq.defer(handler,f)
                return null
            });
@@ -149,7 +162,7 @@ years.forEach(function(year){
 ydq.await(function(){
     // finished loading up all of the files into the file_queue, so
     // set the await on that
-    file_queue.await(file_queue_drain);
+    console.log('ydq has drained')
     return null
 })
 
