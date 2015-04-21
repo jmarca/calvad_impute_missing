@@ -185,3 +185,59 @@ run code from `calvad/strip_attachments_vdsdata_tracking`
 
 After imputing WIM and VDS, you have to merge pairs.  That is what I
 am working on now.
+find D07/60/W -name *2012.120.imputed.RData  -size +100k -delete
+
+# April 2015 notes
+
+The backing R library has been completely redone, and there is a
+slightly different procedure for loading the R code.  That said, the R
+code should not be a concern.  npm install automatically installs the
+CalVAD rscripts package, and the R code makes sure that the library is
+accessible.
+
+The one requirement, which is the same for the node.js code, is that
+the configuration file has to exist.  The default configuration file for
+testing is test.config.json, and the default  for production runs is
+config.json.  These files should be chmod 0600 (readable and writable
+only by the owner) because they contain passwords.  An example is:
+
+```json
+{
+    "couchdb": {
+        "host": "127.0.0.1",
+        "port":5984,
+        "trackingdb":"test%2fvdsdata%2ftracking",
+        "auth":{"username":"couchuser",
+                "password":"mycouchpassword"
+               },
+        "dbname":"testing",
+        "design":"detectors",
+        "view":"fips_year"
+    },
+    "postgresql":{
+        "host":"127.0.0.1",
+        "port":5432,
+        "auth":{
+         "username":"psqluser"
+        },
+        "db":"test_stationsparse"
+    }
+}
+```
+
+The production `config.json` file should look the same, but just use
+the "real" couchdb and postgresql database names.
+
+Two items of note.  First, that the PostgreSQL portion of the
+configuration does not include a password.  That's because postgres
+makes use of a .pgpass file, so I do too.  Put your postgresql
+passwords there, not here.
+
+Second, the couchdb part has a lot of cruft in the example.  The
+"dbname" parameter is used to expand names.  It prepends any sequence
+of names.  It doesn't really apply in production, but it is used
+extensively in testing.  In production just set it to "vdsdata".
+
+The trackingdb should be set to "vdsdata%2ftracking" in production,
+and the dbname to "vdsdata".  The design and view aren't used here,
+but are used in other CalVAD modules.

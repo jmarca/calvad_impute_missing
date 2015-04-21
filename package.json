@@ -4,7 +4,7 @@
   "description": "trigger imputation routines in CalVAD",
   "main": "trigger_vds_impute.js",
   "directories": {
-    "test": "test"
+    "test": "tests"
   },
   "dependencies": {
     "async": "",
@@ -16,12 +16,14 @@
     "lodash": "",
     "pg": "",
     "queue-async": "^1.0.7",
-    "rstats_couch_utils": "jmarca/rstats_couch_utils",
+    "rcouchutils": "jmarca/rstats_couch_utils#refactor/newcouchutils",
+    "configr": "git://github.com/jmarca/configr.git",
     "rstats_remote_files": "jmarca/rstats_remote_files",
     "superagent": "",
     "suss_detector_id": "jmarca/suss_detector_id.git"
   },
   "devDependencies": {
+    "mocha": "^2.2.4",
     "should": ""
   },
   "scripts": {

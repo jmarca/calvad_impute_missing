@@ -13,7 +13,7 @@ var couch_check = require('couch_check_state')
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // on lysithia, don't go over 3
-// num_CPUs=1
+//num_CPUs=1
 
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
@@ -93,6 +93,7 @@ function vdsfile_handler(opt){
 }
 var glob = require('glob')
 
+// maxqueue = 10
 function vdsfile_handler_2(opt){
     // this checks the file system for an RData file
     var district = opt.env['RDISTRICT']
@@ -115,9 +116,10 @@ function vdsfile_handler_2(opt){
             }
             //console.log(result)
             //throw new Error('die')
-            if(result.length === 0){
-                console.log(searchpath,pattern)
-                console.log('no imputed file output, push ',did,' to queue')
+            if(result.length === 0 ){
+                // && maxqueue
+		// maxqueue--
+                console.log('no imputed file output found under ',searchpath,', push ',did,' to queue')
                 // throw new Error('die')
                 trigger_R_job({'file':f
                                ,'opts':opt
@@ -136,15 +138,15 @@ function vdsfile_handler_2(opt){
 var years = [2012]//,2011];
 
 var districts = [
-                // 'D03' //
-                // 'D04' //
-                //'D05' //
-                //,'D06' //
-                // ,'D07' //
-                // 'D08' //
-                // ,'D10' //
-                // ,'D11' //
-                'D12' //
+    // 'D03' // done 2012
+    // 'D04' // done 2012
+    //'D05' // done 2012
+    //,'D06' // done 2012
+    'D07' // activimetrics
+    // 'D08' // done 2012
+    ,'D10' // activimetrics
+    ,'D11' // activimetrics
+    ,'D12' // activimetrics
 ]
 
 
