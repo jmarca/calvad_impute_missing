@@ -11,11 +11,11 @@ var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
 var force_plot = true //process.env.CALVAD_FORCE_PLOT
-var check_existing = true //process.env.CALVAD_CHECK_EXISTING_PLOT
+var check_existing = process.env.CALVAD_CHECK_EXISTING_PLOT
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // for testing, just one process at a time
-// num_CPUs=1
+num_CPUs=1
 
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
