@@ -71,7 +71,7 @@ result <- calvadrscripts::get.and.plot.vds.amelia(
     force.plot=force.plot,
     trackingdb=db)
 
-result <- calvadrscripts::plot.raw.data(
+result <- calvadrscripts::plot_raw.data(
     fname,thefile,path,year,vds.id
    ,remote=FALSE
    ,force.plot=force.plot
