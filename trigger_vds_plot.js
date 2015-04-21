@@ -11,6 +11,7 @@ var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
 var force_plot = true //process.env.CALVAD_FORCE_PLOT
+var check_existing = true //process.env.CALVAD_CHECK_EXISTING_PLOT
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // for testing, just one process at a time
@@ -69,47 +70,55 @@ function vdsfile_handler(opt){
     return function(f,cb){
         var did = suss_detector_id(f)
 
-        console.log({'db':statedb
-                     ,'doc':did
-                     ,'year':'_attachments'
-                     ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-                    })
-        couch_check({'db':statedb
-                     ,'doc':did
-                     ,'year':'_attachments'
-                     ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-                    }
-                    ,function(err,state){
-                        if(err) return cb(err)
-                        console.log(state)
-                        //if(!state){
-                            console.log('push to queue '+f)
-                            trigger_R_job({'file':f
-                                           ,'opts':opt
-                                          },cb);
-                        //}else{
-                        //    console.log('already done')
-                        //    cb() // move on to the next
-                        //}
-                        return null
-                    });
-        return null
+        if(check_existing){
+	    console.log({'db':statedb
+			 ,'doc':did
+			 ,'year':'_attachments'
+			 ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
+			})
+            couch_check({'db':statedb
+			 ,'doc':did
+			 ,'year':'_attachments'
+			 ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
+			}
+			,function(err,state){
+                            if(err) return cb(err)
+                            console.log(state)
+                            if(!state){
+				console.log('push to queue '+f)
+				trigger_R_job({'file':f
+                                               ,'opts':opt
+                                              },cb);
+                            }else{
+                                console.log('already done')
+                                cb() // move on to the next
+                            }
+                            return null
+			});
+            return null
+	}else{
+            console.log('push to queue '+f)
+            trigger_R_job({'file':f
+                           ,'opts':opt
+                          },cb);
+	    return null
+	}
+	
     }
 }
-
 
 var years = [2012]//,2011];
 
 var districts = [
-                // 'D03' //
-                // 'D04' //
-                //'D05' //
-                //,'D06' //
-                // ,'D07' //
-                // 'D08' //
-    'D10' // apparently already done
-                // ,'D11' //
-                // ,'D12' //
+    // 'D03' // done 2012
+    // 'D04' // done 2012
+    //'D05' // done 2012
+    //,'D06' // done 2012
+    'D07' // activimetrics
+    // 'D08' // done 2012
+    ,'D10' // activimetrics
+    ,'D11' // activimetrics
+    ,'D12' // activimetrics
 ]
 
 
