@@ -13,7 +13,7 @@ var couch_check = require('couch_check_state')
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
 // on lysithia, don't go over 3
-//num_CPUs=1
+// num_CPUs=1
 
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
@@ -93,7 +93,7 @@ function vdsfile_handler(opt){
 }
 var glob = require('glob')
 
-// maxqueue = 10
+//maxqueue = 20
 function vdsfile_handler_2(opt){
     // this checks the file system for an RData file
     var district = opt.env['RDISTRICT']
@@ -116,15 +116,19 @@ function vdsfile_handler_2(opt){
             }
             //console.log(result)
             //throw new Error('die')
-            if(result.length === 0 ){
-                // && maxqueue
-		// maxqueue--
+            if(result.length === 0
+                 //&& maxqueue
+	      ){
+		//maxqueue--
                 console.log('no imputed file output found under ',searchpath,', push ',did,' to queue')
                 // throw new Error('die')
                 trigger_R_job({'file':f
                                ,'opts':opt
                               },cb)
             }else{
+		// if(!maxqueue){
+		//     throw new Error('die bye')
+		// }
                 console.log('already done: '+result)
                 cb() // move on to the next
             }

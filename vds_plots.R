@@ -24,7 +24,8 @@ config <- rcouchutils::get.config(config_file)
 ## dataframe will get loaded.  In either case, the plots will get made
 ## and saved to couchdb
 
-
+## need to do this
+library(Amelia)
 
 district = Sys.getenv(c('RDISTRICT'))[1]
 
@@ -65,7 +66,9 @@ if('' == force.plot || force.plot==0 || force.plot == 'false'){
 db <- config$couchdb$trackingdb
 
 result <- calvadrscripts::get.and.plot.vds.amelia(
-    vds.id,year=year,doplots=TRUE,
+    pair=vds.id,
+    year=year,
+    doplots=TRUE,
     remote=FALSE,
     path=path,
     force.plot=force.plot,
