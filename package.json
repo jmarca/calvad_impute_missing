@@ -16,8 +16,8 @@
     "lodash": "",
     "pg": "",
     "queue-async": "^1.0.7",
-    "rcouchutils": "jmarca/rstats_couch_utils#refactor/newcouchutils",
-    "configr": "git://github.com/jmarca/configr.git",
+    "rcouchutils": "jmarca/rstats_couch_utils",
+    "configr": "jmarca/configr.git",
     "rstats_remote_files": "jmarca/rstats_remote_files",
     "superagent": "",
     "suss_detector_id": "jmarca/suss_detector_id.git"
