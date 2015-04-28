@@ -57,6 +57,10 @@ path = paste(pems.root,district,sep='')
 file <- paste(path,file,sep='/')
 print(file)
 
+altpath <-  paste(file.names[-length(file.names)],collapse='/')
+path <- paste(path,altpath,sep='/')
+## print(paste('path',path,'altpath',altpath))
+
 force.plot = Sys.getenv(c('CALVAD_FORCE_PLOT'))[1]
 if('' == force.plot || force.plot==0 || force.plot == 'false'){
     force.plot = FALSE
