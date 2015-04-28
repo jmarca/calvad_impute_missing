@@ -8,7 +8,7 @@ path <- normalizePath(node_paths, winslash = "/", mustWork = FALSE)
 lib_paths <- .libPaths()
 .libPaths(c(path, lib_paths))
 
-print(.libPaths())
+## print(.libPaths())
 
 ## need env for test file
 config_file <- Sys.getenv('R_CONFIG')
