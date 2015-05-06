@@ -71,36 +71,109 @@ stored on the local file system.  To run these tests and prepare for
 running the program on real data, you need to set some environment
 variables.
 
-# settings
+# Settings
 
-*Soon to change*
+*changed recently*
 
-(This will soon change to using a configuration file, config.json)
+(This has changed recently to using a configuration file, config.json)
+
+The code uses a config file, as well as I think just one environment
+variable.
+
+The tests also need a valid config file, called test.config.json
+
+The one deviation from my usual practices is that the postgresql test
+configuration need to point to a real database, or at least one that
+contains everything it needs to load data from WIM site 108 in 2012.
+I have not yet saved the required data to create this prior to running
+the test.  If/When this condition changes, I will remove this note
+here.
 
 
-The server is defined using the environment variables:
+## Example test.config.json
+
+An example test.config.json file looks like this:
 
 ```
-CALVAD_FILE_SERVER = 'http://lysithia.its.uci.edu'
-CALVAD_FILE_PORT = 80
+{
+    "couchdb": {
+        "host": "127.0.0.1",
+        "port":5984,
+        "trackingdb":"test%2fvdsdata%2ftracking",
+        "auth":{"username":"couchuser",
+                "password":"my secret password"
+               },
+        "dbname":"testing",
+        "design":"detectors",
+        "view":"fips_year"
+    },
+    "postgresql":{
+        "host":"127.0.0.1",
+        "port":5432,
+        "auth":{
+         "username":"sqluser"
+        },
+        "db":"spatialvds"
+    }
+}
 ```
 
-The default is to get the files from https://calvad.ctmlabs.net, which
-sadly appears to be an expired domain (funding for that project was cut).
-There is also a parallel version of the fetching code that will pull
-from a local file system, looking by default under the directory
-'/data/pems/breakup/' that is currently hardcoded in the file
-`get_files.js`.
+Two things to note.  First the couchdb config file must have the
+correct username and password.  Also, the various other elements
+(trackingdb, dbname, design, and view) need to be there, but the
+contents doesn't matter at all.
 
-The test program should exercise both the remote get and the local
-get.  Run the test with the command:
+Second, the postgresql configuration *must* point to a database that
+has all of the required information to load the raw data for site 108
+in 2012.  Also, the password for the postgresql connection is *not*
+included in this file.  Instead, I rely on the existence of a .pgpass
+file, as does postgresql itself.  Please search the postgresql docs
+for ".pgpass" to figure out how to use this file, but in a nutshell,
+you need an entry like:
 
 ```
-mocha test --timeout 5000
+#hostname:port:database:username:password
+127.0.0.1:*:*:sqluser:myocardial infarction
 ```
 
-Increase the timeout if you have a slow network connection or the test
-times out.
+In the above example, the connection to *any* database on *any* port
+to host 127.0.0.1 with username "sqluser" will try the password
+"myocardial infarction".
+
+## Example config.json
+
+The actual config.json file used in production is similar to the
+test.config.json, except that the databases are the production
+databases.
+
+```
+{
+    "couchdb": {
+        "host": "127.0.0.1",
+        "port":5984,
+        "trackingdb":"vdsdata%2ftracking",
+        "auth":{"username":"couchuser",
+                "password":"couchpass"
+               },
+        "dbname":"vdsdata",
+        "design":"detectors",
+        "view":"fips_year"
+    },
+    "postgresql":{
+        "host":"127.0.0.1",
+        "port":5432,
+        "auth":{
+         "username":"sqlusername"
+        },
+        "db":"spatialvds"
+    }
+}
+
+```
+
+Make sure the right hosts, ports, usernames, and (for couchdb) password are
+inserted in the above.
+
 
 # R dependencies
 
@@ -117,6 +190,28 @@ ambition of packaging all of the files into a single R file.  That
 didn't work as well as planned, so I've switched to using npm.  All of
 *my* R libraries should have been installed automatically from github
 using the prior `npm install` command.
+
+To install the required libraries, at the command line, type
+
+```
+npm install
+```
+
+This will *NOT* install all of the required R libraries.  That must be
+done from within R as the root user, or from your operating system's
+package manager.
+
+To find out if anything is missing, just do
+
+```
+Rscript Rtest.R
+```
+
+from the command line.  That will fail with a note about what library
+might be missing.  If it actually starts running R, then you have all
+of the installed library files and any remaining problems are most
+likely configuration issues (pointing to the right couchdb or
+postgresql databases).
 
 ## CRAN R code
 
