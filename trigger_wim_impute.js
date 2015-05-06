@@ -3,11 +3,17 @@ var util  = require('util'),
     spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var async = require('async');
+var queue = require('queue-async');
 var _ = require('lodash');
 var get_files = require('./get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
+
+
+var wimpath = process.env.WIM_PATH
+if(!wimpath){
+    throw new Error('assign a value to env variable WIM_PATH')
+}
 
 var num_CPUs = require('os').cpus().length;
 // num_CPUs=1 // while testing
@@ -48,13 +54,10 @@ var trigger_R_job = function(task,done){
     R.stderr.pipe(logstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',wim)
+        // testing
+        // throw new Error('croak')
         return done()
     })
-}
-var file_queue=async.queue(trigger_R_job,num_CPUs)
-file_queue.drain =function(){
-    console.log('queue drained')
-    return null
 }
 
 var years = [2012]//,2011];
@@ -68,52 +71,88 @@ var opts = { cwd: undefined,
              env: process.env
            }
 
+var doover = process.env.REDO_WIM
+console.log(doover)
+
 var rootdir = path.normalize(__dirname)
 var config_file = rootdir+'/config.json'
 var config={}
 
-_.each(years,function(year){
-    wim_sites({'year':year
-               ,'config_file':config_file}
-              ,function(e,r){
+var fileq = queue(num_CPUs);
+var yearq = queue()
+years.forEach(function(year){
+    var opt ={'year':year
+              ,'config_file':config_file}
+    var callback = function(e,r){
 
-                  // // hack to force a few detectors to be redone
-                  // r.rows = [{ id: 'wim.12.S ',  key: [ 2010, 'nothing', '12' ,'S'  ], value: null }
-                  //          ,{ id: 'wim.28.N ', key: [ 2010, 'nothing', '28' ,'N' ], value: null }
-                  //          ,{ id: 'wim.23.W ', key: [ 2010, 'nothing', '23' ,'W'  ], value: null }
-                  //          ,{ id: 'wim.108.S', key: [ 2010, 'nothing', '108','S' ], value: null }
-                  //          ,{ id: 'wim.36.E ', key: [ 2010, 'nothing', '36' ,'E'  ], value: null }
-                  //          ,{ id: 'wim.30.S ', key: [ 2010, 'nothing', '30' ,'S'  ], value: null }
-                  //          ,{ id: 'wim.27.S ', key: [ 2010, 'nothing', '27' ,'S'  ], value: null }
-                  //          ,{ id: 'wim.27.N ', key: [ 2010, 'nothing', '27' ,'N'  ], value: null }
-                  //          ,{ id: 'wim.26.E ', key: [ 2010, 'nothing', '26' ,'E'  ], value: null }
-                  //          ,{ id: 'wim.43.E ', key: [ 2010, 'nothing', '43' ,'E'  ], value: null }
-                  //          ,{ id: 'wim.22.W ', key: [ 2010, 'nothing', '22' ,'W'  ], value: null }
-                  //          ,{ id: 'wim.113.E', key: [ 2010, 'nothing', '113','E' ], value: null }
-                  //          ]
+        // // hack to force a few detectors to be redone
+        // r.rows = [{ id: 'wim.12.S ',  key: [ 2010, 'nothing', '12' ,'S'  ], value: null }
+        //          ,{ id: 'wim.28.N ', key: [ 2010, 'nothing', '28' ,'N' ], value: null }
+        //          ,{ id: 'wim.23.W ', key: [ 2010, 'nothing', '23' ,'W'  ], value: null }
+        //          ,{ id: 'wim.108.S', key: [ 2010, 'nothing', '108','S' ], value: null }
+        //          ,{ id: 'wim.36.E ', key: [ 2010, 'nothing', '36' ,'E'  ], value: null }
+        //          ,{ id: 'wim.30.S ', key: [ 2010, 'nothing', '30' ,'S'  ], value: null }
+        //          ,{ id: 'wim.27.S ', key: [ 2010, 'nothing', '27' ,'S'  ], value: null }
+        //          ,{ id: 'wim.27.N ', key: [ 2010, 'nothing', '27' ,'N'  ], value: null }
+        //          ,{ id: 'wim.26.E ', key: [ 2010, 'nothing', '26' ,'E'  ], value: null }
+        //          ,{ id: 'wim.43.E ', key: [ 2010, 'nothing', '43' ,'E'  ], value: null }
+        //          ,{ id: 'wim.22.W ', key: [ 2010, 'nothing', '22' ,'W'  ], value: null }
+        //          ,{ id: 'wim.113.E', key: [ 2010, 'nothing', '113','E' ], value: null }
+        //          ]
 
-                  console.log("loaded r.rows of length "+r.rows.length)
+        if(r && r.rows !== undefined && r.rows.length >0){
+            console.log("loaded r.rows of length "+r.rows.length)
+        }else{
+            console.log('got nothing from couchdb')
+        }
 
-        _.each(r.rows,function(row){
-            var w = row.key[2]
-            if(unique_wim[w+year] === undefined){
+        // hack to force all to be redone?
+        if(doover){
+            var allsites = wim_sites.sites
+
+            allsites.forEach(function(row){
                 var _opts = _.clone(opts)
-                _opts.wim=w
+                _opts.wim=row.site
                 _opts.year=year
+                if(row.site < 800){
+                    console.log('push ',row.site)
+                    fileq.defer(trigger_R_job,_opts)
+                }
+                unique_wim[row.site+year]=1
+                return null
+            })
+        }
+        if(r && r.rows !== undefined && r.rows.length >0){
+            r.rows.forEach(function(row){
+                var w = row.key[2]
+                if(unique_wim[w+year] === undefined){
+                    var _opts = _.clone(opts)
+                    _opts.wim=w
+                    _opts.year=year
+                    console.log('push site: ',w)
 
-                file_queue.push(_opts
-                               ,function(){
-                                    console.log('wim site '+w+' '+year+' done, '
-                                               +file_queue.length()
-                                               +' files remaining')
-                                    return null
-                                })
-
+                    fileq.defer(trigger_R_job,_opts)
+                }
                 unique_wim[w+year]=1
-            }
-        })
+                return null
+            })
+        }
+        return null
+    }
+    yearq.defer(wim_sites,opt,callback)
+    return null
+})
+
+yearq.await(function(){
+    // done loading fileq, so set the final "await" on it
+    console.log('done processing years and setting up jobs. Waiting for jobs to finish')
+    fileq.await(function(){
+        console.log('wim file processing has drained')
+        return null
     })
-});
+    return null
+})
+
 
 
 
