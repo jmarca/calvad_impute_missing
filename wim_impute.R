@@ -37,19 +37,19 @@ seconds <- 3600
 year = as.numeric(Sys.getenv(c('RYEAR'))[1])
 if('' == year){
   print('assign the year to process to the RYEAR environment variable')
-  exit(1)
+  stop(1)
 }
 
 wim.site <- Sys.getenv(c('WIM_SITE'))[1]
 if('' ==  wim.site){
   print('assign a valid site to the WIM_SITE environment variable')
-  exit(1)
+  stop(1)
 }
 
 wim.path <- Sys.getenv(c('WIM_PATH'))[1]
 if('' == wim.path){
   print('assign a valid direectory to the WIM_PATH environment variable')
-  exit(1)
+  stop(1)
 }
 
 
