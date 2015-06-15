@@ -6,7 +6,7 @@ var path = require('path');
 var fs = require('fs');
 var queue = require('queue-async');
 var _ = require('lodash');
-var get_files = require('./get_files')
+var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 

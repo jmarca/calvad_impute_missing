@@ -9,7 +9,7 @@ var _ = require('lodash')
 var superagent = require('superagent')
 var http = require('http')
 
-var get_files = require('../get_files')
+var get_files = require('../lib/get_files')
 
 
 describe('get vds files local',function(){
