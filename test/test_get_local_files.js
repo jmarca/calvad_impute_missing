@@ -4,10 +4,7 @@
 
 var should = require('should')
 
-var async = require('async')
 var _ = require('lodash')
-var superagent = require('superagent')
-var http = require('http')
 
 var get_files = require('../lib/get_files')
 
