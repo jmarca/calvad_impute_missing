@@ -36,19 +36,19 @@ district = Sys.getenv(c('RDISTRICT'))[1]
 
 if('' == district){
   print('assign a district to the RDISTRICT environment variable')
-  exit(1)
+  stop(1)
 }
 
 file = Sys.getenv(c('FILE'))[1]
 if('' == file){
   print('assign a file to process to the FILE environment variable')
-  exit(1)
+  stop(1)
 }
 
 year = as.numeric(Sys.getenv(c('RYEAR'))[1])
 if('' == year){
   print('assign the year to process to the RYEAR environment variable')
-  exit(1)
+  stop(1)
 }
 
 district.path=paste(district,'/',sep='')
