@@ -3,9 +3,9 @@ var vds_files = require('../lib/vds_files.js')
 var config = {}
 
 describe('load RData file, check message',function(){
-    var goodfile ='../tests/testthat/files/1211682_ML_2012.120.imputed.RData'
-    var notamelia ='../tests/testthat/files/1211682_ML_2012.df.2012.RData'
-    var badamelia ='../tests/testthat/files/801320_ML_2012.120.imputed.RData'
+    var goodfile ='./tests/testthat/files/1211682_ML_2012.120.imputed.RData'
+    var notamelia ='./tests/testthat/files/1211682_ML_2012.df.2012.RData'
+    var badamelia ='./tests/testthat/files/801320_ML_2012.120.imputed.RData'
     it('should get an amelia file just fine',
        function(done){
            vds_files.check_RData(config,
