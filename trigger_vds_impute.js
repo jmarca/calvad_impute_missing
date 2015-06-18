@@ -96,15 +96,15 @@ var vdsfile_handler_2 = require('./lib/vds_files.js').vdsfile_handler_2
 var years = [2012]//,2011];
 
 var districts = [
-    // 'D03' // done 2012
-    // 'D04' // done 2012
-    //'D05' // done 2012
-    //,'D06' // done 2012
-    'D07' // activimetrics
-    // 'D08' // done 2012
-    ,'D10' // activimetrics
-    ,'D11' // activimetrics
-    ,'D12' // activimetrics
+    'D03'  //
+    ,'D04' //
+    ,'D05' //
+    ,'D06' //
+    ,'D07' //
+    ,'D08' //
+    ,'D10' //
+    ,'D11' //
+    ,'D12' //
 ]
 
 
