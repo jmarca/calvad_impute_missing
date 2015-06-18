@@ -20,7 +20,6 @@ var root = path.normalize(pems_root)
 
 var statedb = 'vdsdata%2ftracking'
 
-var R;
 
 
 /**
