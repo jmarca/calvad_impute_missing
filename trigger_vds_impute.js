@@ -38,7 +38,6 @@ var trigger_R_job = function(task,done){
     var opts = _.clone(task.opts)
 
     opts.env['FILE']=file
-    opts.env['CALVAD_PEMS_ROOT']=pems_root
     console.log('processing ',file)
 
     var R  = spawn('Rscript', RCall, opts);
@@ -92,51 +91,7 @@ function vdsfile_handler(opt){
 }
 var glob = require('glob')
 
-//maxqueue = 20
-function vdsfile_handler_2(opt){
-    // this checks the file system for an RData file
-    var district = opt.env['RDISTRICT']
-    var year=opt.env['RYEAR']
-    var path_pattern = /(.*\/).+$/;
-    return function(f,cb){
-
-        var re = path_pattern.exec(f)
-        var searchpath = [root,district].join('/')
-        if(re && re[1]){
-            searchpath = path.normalize(searchpath+'/'+re[1])
-        }
-        var did = suss_detector_id(f)
-        var pattern = ["**/"+did+"_ML_",year,"*imputed.RData"].join('')
-        glob(pattern,{cwd:searchpath,dot:true},function(err,result){
-
-            if(err){
-                console.log(err)
-                return cb(err)
-            }
-            //console.log(result)
-            //throw new Error('die')
-            if(result.length === 0
-                 //&& maxqueue
-	      ){
-		//maxqueue--
-                console.log('no imputed file output found under ',searchpath,', push ',did,' to queue')
-                // throw new Error('die')
-                trigger_R_job({'file':f
-                               ,'opts':opt
-                              },cb)
-            }else{
-		// if(!maxqueue){
-		//     throw new Error('die bye')
-		// }
-                console.log('already done: '+result)
-                cb() // move on to the next
-            }
-            return null
-        });
-        return null
-    }
-}
-
+var vdsfile_handler_2 = require('./lib/vds_files.js').vdsfile_handler_2
 
 var years = [2012]//,2011];
 
@@ -158,7 +113,7 @@ function year_district_handler(opt,callback){
 
     // this handler, vdsfile_handler_2, will check the file system for
     // "imputed.RData" to see if this detector is done
-    var handler = vdsfile_handler_2(opt)
+    var handler = vdsfile_handler_2(opt,trigger_R_job)
     console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles_local(
         {district:opt.env['RDISTRICT']
@@ -194,6 +149,8 @@ years.forEach(function(year){
         var o = _.clone(opts,true)
         o.env['RYEAR'] = year
         o.env['RDISTRICT']=district
+        o.env['CALVAD_PEMS_ROOT']=pems_root
+
         ydq.defer(year_district_handler,o)
         return null
     })
