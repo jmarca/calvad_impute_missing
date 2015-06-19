@@ -10,3 +10,4 @@
 **/.cookies.txt
 **/test.config.json
 **/config.json
+.tern-port

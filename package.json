@@ -15,15 +15,15 @@
     "glob": "",
     "lodash": "",
     "pg": "",
-    "queue-async": "^1.0.7",
-    "rcouchutils": "jmarca/rstats_couch_utils",
-    "configr": "jmarca/configr.git",
+    "queue-async": "",
+    "rstats_couch_utils": "jmarca/rstats_couch_utils",
+    "configr": "jmarca/configr",
     "rstats_remote_files": "jmarca/rstats_remote_files",
     "superagent": "",
     "suss_detector_id": "jmarca/suss_detector_id.git"
   },
   "devDependencies": {
-    "mocha": "^2.2.4",
+    "mocha": "",
     "should": ""
   },
   "scripts": {
