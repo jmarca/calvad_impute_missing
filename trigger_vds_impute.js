@@ -10,7 +10,11 @@ var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
 var couch_check = require('couch_check_state')
 
+var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
+
 var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
+
+var vdsfile_handler_2 = require('./lib/vds_files.js').vdsfile_handler_2
 
 // on lysithia, don't go over 3
 // num_CPUs=1
@@ -91,7 +95,6 @@ function vdsfile_handler(opt){
 }
 var glob = require('glob')
 
-var vdsfile_handler_2 = require('./lib/vds_files.js').vdsfile_handler_2
 
 var years = [2012]//,2011];
 
@@ -113,12 +116,13 @@ function year_district_handler(opt,callback){
 
     // this handler, vdsfile_handler_2, will check the file system for
     // "imputed.RData" to see if this detector is done
-    var handler = vdsfile_handler_2(opt,trigger_R_job)
+    var handler = vdsfile_handler_2(opt,trigger_R_job,double_check_amelia)
     console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
     get_files.get_yearly_vdsfiles_local(
         {district:opt.env['RDISTRICT']
-        ,year:opt.env['RYEAR']
+         ,year:opt.env['RYEAR']
          //,searchpath:root
+         ,rdata:true
         }
       ,function(err,list){
            if(err) throw new Error(err)
