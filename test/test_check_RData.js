@@ -17,6 +17,7 @@ before(function(done){
         config.env['RYEAR'] = 2012
         config.env['RDISTRICT']=c.district
         config.env['CALVAD_PEMS_ROOT']=c.calvad.vdspath
+        config.env['R_CONFIG']=config_file
         config.calvad = c.calvad
         config.district = c.district
 
