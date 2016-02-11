@@ -11,6 +11,8 @@
     "calvad_rscripts": "jmarca/calvad_rscripts",
     "calvad_vds_sites": "jmarca/calvad_vds_sites",
     "calvad_wim_sites": "jmarca/calvad_wim_sites",
+    "config_okay": "0.0.3",
+    "configr": "jmarca/configr",
     "couch_check_state": "jmarca/couch_check_state.git",
     "couch_set_state": "jmarca/couch_set_state.git",
     "glob": "",
@@ -18,7 +20,6 @@
     "pg": "",
     "queue-async": "",
     "rstats_couch_utils": "jmarca/rstats_couch_utils",
-    "configr": "jmarca/configr",
     "rstats_remote_files": "jmarca/rstats_remote_files",
     "superagent": "",
     "suss_detector_id": "jmarca/suss_detector_id.git"
