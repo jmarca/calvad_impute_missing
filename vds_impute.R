@@ -61,18 +61,31 @@ pems.root = Sys.getenv(c('CALVAD_PEMS_ROOT'))[1]
 path = paste(pems.root,district,sep='')
 file <- paste(path,file,sep='/')
 print(file)
-goodfactor <-   3.5
+
+goodfactor = Sys.getenv(c('CALVAD_VDS_IMPUTE_GOODFACTOR'))[1]
+if('' == goodfactor){
+    goodfactor <-   3.5
+}else{
+    goodfactor <- as.numeric(goodfactor)
+}
+
 seconds = 120
 ## using maxiter must be a number, not string
 ## so the env var is irritating.  Hard code at 20 for now
 maxiter = Sys.getenv(c('CALVAD_VDS_IMPUTE_MAXITER'))[1]
 if('' == maxiter){
     maxiter=20
+}else{
+    maxiter <- as.numeric(maxiter)
 }
-print(maxiter)
+
+
+print(paste('goodfactor',goodfactor,' and maxiter',maxiter))
 
 ## by the way, 20 is from examining the first 2000 or so imputations
 ## and noticing that most are less than 20
+
+## if you crank goodfactor to 10, crank maxiter as well
 
 db <- config$couchdb$trackingdb
 
