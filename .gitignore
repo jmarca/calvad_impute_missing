@@ -11,3 +11,4 @@
 **/test.config.json
 **/config.json
 .tern-port
+log/*.log

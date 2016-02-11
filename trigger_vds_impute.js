@@ -6,15 +6,11 @@ var path = require('path');
 var fs = require('fs');
 var queue = require('queue-async');
 var _ = require('lodash');
-var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
-var couch_check = require('couch_check_state')
 
 var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 
-var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
 
-var vdsfile_handler_2 = require('./lib/vds_files.js').vdsfile_handler_2
 
 // on lysithia, don't go over 3
 // num_CPUs=1
@@ -22,8 +18,30 @@ var vdsfile_handler_2 = require('./lib/vds_files.js').vdsfile_handler_2
 var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
 var root = path.normalize(pems_root)
 
-var statedb = 'vdsdata%2ftracking'
+//var statedb = 'vdsdata%2ftracking'
 
+// configuration stuff
+var rootdir = path.normalize(__dirname)
+var Rhome = path.normalize(rootdir+'/../R')
+var opts = {cwd: Rhome
+           ,env: process.env
+           }
+
+var config_file = path.normalize(rootdir+'/../config.json')
+var config
+var config_okay = require('config_okay')
+
+function _configure(cb){
+    if(config === undefined){
+        config_okay(config_file,function(e,c){
+            config = c
+            return cb(null,config)
+        })
+        return null
+    }else{
+        return cb(null,config)
+    }
+}
 
 
 /**
@@ -66,33 +84,6 @@ var trigger_R_job = function(task,done){
     // return done()
 }
 
-function vdsfile_handler(opt){
-    // this checks couchdb
-    return function(f,cb){
-        var did = suss_detector_id(f)
-
-        couch_check({'db':statedb
-                    ,'doc':did
-                    ,'year':opt.env['RYEAR']
-                    ,'state':'vdsraw_chain_lengths'
-                    }
-                   ,function(err,state){
-                        if(err) return cb(err)
-                        console.log({file:f,state:state})
-                        if( !state || !_.isArray(state) ){
-                            console.log('queue up for processing')
-                            trigger_R_job({'file':f
-                                           ,'opts':opt
-                                          },cb);
-                        }else{
-                            console.log('already done')
-                            cb() // move on to the next
-                        }
-                       return null
-                    });
-        return null
-    }
-}
 var glob = require('glob')
 
 
@@ -110,36 +101,7 @@ var districts = [
     ,'D12' //
 ]
 
-
-function year_district_handler(opt,callback){
-    // get the files, load the queue
-
-    // this handler, vdsfile_handler_2, will check the file system for
-    // "imputed.RData" to see if this detector is done
-    var handler = vdsfile_handler_2(opt,trigger_R_job,double_check_amelia)
-    console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles_local(
-        {district:opt.env['RDISTRICT']
-         ,year:opt.env['RYEAR']
-         //,searchpath:root
-         ,rdata:true
-        }
-      ,function(err,list){
-           if(err) throw new Error(err)
-           console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-           var fileq = queue(num_CPUs);
-           list.forEach(function(f,idx){
-               console.log('queue up ',f)
-               fileq.defer(handler,f)
-               return null
-           });
-           fileq.await(function(e){
-               return callback(e)
-           })
-           return null
-       })
-}
-
+var year_district_handler = require('./lib/ydh')
 
 var RCall = ['--no-restore','--no-save','vds_impute.R']
 
@@ -155,7 +117,7 @@ years.forEach(function(year){
         o.env['RDISTRICT']=district
         o.env['CALVAD_PEMS_ROOT']=pems_root
 
-        ydq.defer(year_district_handler,o)
+        ydq.defer(year_district_handler,o,trigger_R_job,double_check_amelia)
         return null
     })
     return null
