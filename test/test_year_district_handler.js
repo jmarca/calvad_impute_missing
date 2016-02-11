@@ -73,9 +73,14 @@ describe('year district handler should work',function(){
            var fake_R_call = function(Ropts,cb){
                should.exist(Ropts)
                Ropts.should.have.property('file')
-               Ropts.file.should.eql(todoamelia)
+               console.log(Ropts.file)
+               Ropts.file.should.be.oneOf([todoamelia,notamelia])
                filecount++
-               cb(null,1)
+               if(Ropts.file === todoamelia){
+                   cb(null,1)
+               }else{
+                   cb(null,0)
+               }
                return null
            }
 
@@ -92,7 +97,7 @@ describe('year district handler should work',function(){
                should.not.exist(e)
                should.exist(r)
                r.should.eql([[0,1]])
-               filecount.should.eql(1)
+               filecount.should.eql(2)
                return done()
            })
            return null
