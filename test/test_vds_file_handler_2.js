@@ -79,12 +79,17 @@ describe('vdsfile_handler_2 should work',function(){
                should.exist(Ropts)
                Ropts.should.have.property('file')
                var gotone = todomatches.filter(function(m){
+                   console.log('compare',m,'versus',Ropts.file)
                    return m.test(Ropts.file)
                })
-
+               console.log(gotone)
                should.exist(gotone)
-               gotone.should.have.lengthOf(1)
-               cb(null,1)
+               if(gotone.length > 0 ){
+                   cb(null,1)
+
+               }else{
+                   cb(null,0)
+               }
                return null
            }
            var o ={env:{}}
