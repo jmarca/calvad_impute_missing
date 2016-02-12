@@ -51,6 +51,7 @@ describe('vdsfile_handler_2 should work',function(){
            o.env['RYEAR'] = year
            o.env['RDISTRICT']=config.district
            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+           o.env['R_CONFIG']=config_file
            o.calvad = config.calvad
            o.district = config.district
 
@@ -96,6 +97,7 @@ describe('vdsfile_handler_2 should work',function(){
            o.env['RYEAR'] = year
            o.env['RDISTRICT']=config.district
            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+           o.env['R_CONFIG']=config_file
            o.calvad = config.calvad
            o.district = config.district
            vdsfile_handler_2(o,fake_R_call,true,function(e,handler){

@@ -54,6 +54,7 @@ describe('year district handler should work',function(){
            o.env['RYEAR'] = year
            o.env['RDISTRICT']=config.district
            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+           o.env['R_CONFIG']=config_file
            o.calvad = config.calvad
            o.district = config.district
 
@@ -88,6 +89,7 @@ describe('year district handler should work',function(){
            o.env['RYEAR'] = year
            o.env['RDISTRICT']=config.district
            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+           o.env['R_CONFIG']=config_file
            o.calvad = config.calvad
            o.district = config.district
 
@@ -97,7 +99,7 @@ describe('year district handler should work',function(){
                should.not.exist(e)
                should.exist(r)
                r.should.eql([[0,1]])
-               filecount.should.eql(2)
+               filecount.should.eql(1)
                return done()
            })
            return null
