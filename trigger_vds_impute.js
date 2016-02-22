@@ -15,9 +15,6 @@ var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 // on lysithia, don't go over 3
 // num_CPUs=1
 
-var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
-var root = path.normalize(pems_root)
-
 //var statedb = 'vdsdata%2ftracking'
 
 // configuration stuff
@@ -34,6 +31,7 @@ var config_okay = require('config_okay')
 function _configure(cb){
     if(config === undefined){
         config_okay(config_file,function(e,c){
+            if(e) throw new  Error(e)
             config = c
             return cb(null,config)
         })
@@ -109,25 +107,37 @@ var RCall = ['--no-restore','--no-save','vds_impute.R']
 var opts = { cwd: undefined,
              env: process.env
            }
-var ydq = queue(1);
-years.forEach(function(year){
-    districts.forEach(function(district){
-        var o = _.clone(opts,true)
-        o.env['RYEAR'] = year
-        o.env['RDISTRICT']=district
-        o.env['CALVAD_PEMS_ROOT']=pems_root
 
-        ydq.defer(year_district_handler,o,trigger_R_job,double_check_amelia)
+_configure(function(e,r){
+    if(e) throw new Error(e)
+
+    var ydq = queue(1);
+    years.forEach(function(year){
+        districts.forEach(function(district){
+            var o = _.clone(opts,true)
+            o.env['RYEAR'] = year
+            o.env['RDISTRICT']=district
+            o.district = district
+
+            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+            o.env['R_CONFIG']=config_file
+            o.calvad = config.calvad
+
+            ydq.defer(year_district_handler,o,trigger_R_job,double_check_amelia)
+            return null
+        })
         return null
     })
-    return null
-})
 
-ydq.await(function(){
-    // finished loading up all of the files into the file_queue, so
-    // set the await on that
-    console.log('ydq has drained')
+    ydq.await(function(){
+        // finished loading up all of the files into the file_queue, so
+        // set the await on that
+        console.log('ydq has drained')
+        return null
+    })
+
     return null
+
 })
 
 
