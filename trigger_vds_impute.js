@@ -19,12 +19,12 @@ var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 
 // configuration stuff
 var rootdir = path.normalize(__dirname)
-var Rhome = path.normalize(rootdir+'/../R')
+var Rhome = path.normalize(rootdir+'/R')
 var opts = {cwd: Rhome
            ,env: process.env
            }
 
-var config_file = path.normalize(rootdir+'/../config.json')
+var config_file = path.normalize(rootdir+'/config.json')
 var config
 var config_okay = require('config_okay')
 
