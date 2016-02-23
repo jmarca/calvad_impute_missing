@@ -30,6 +30,7 @@ m <- dbDriver("PostgreSQL")
 con <-  dbConnect(m
                   ,user=config$postgresql$auth$username
                   ,host=config$postgresql$host
+                  ,port=config$postgresql$port
                   ,dbname=config$postgresql$db)
 
 district = Sys.getenv(c('RDISTRICT'))[1]
