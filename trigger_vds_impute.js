@@ -11,12 +11,25 @@ var argv = require('minimist')(process.argv.slice(2));
 
 var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 
+var year_district_handler = require('./lib/ydh')
+
+var RCall = ['--no-restore','--no-save','vds_impute.R']
 
 
-// on lysithia, don't go over 3
-// num_CPUs=1
+var years = [2012]//,2011];
 
-//var statedb = 'vdsdata%2ftracking'
+var districts = [
+    'D03'  //
+    ,'D04' //
+    ,'D05' //
+    ,'D06' //
+    ,'D07' //
+    ,'D08' //
+    ,'D10' //
+    ,'D11' //
+    ,'D12' //
+]
+
 
 // configuration stuff
 var rootdir = path.normalize(process.cwd())
@@ -88,32 +101,6 @@ var trigger_R_job = function(task,done){
     })
     // return done()
 }
-
-var glob = require('glob')
-
-
-var years = [2012]//,2011];
-
-var districts = [
-    'D03'  //
-    ,'D04' //
-    ,'D05' //
-    ,'D06' //
-    ,'D07' //
-    ,'D08' //
-    ,'D10' //
-    ,'D11' //
-    ,'D12' //
-]
-
-var year_district_handler = require('./lib/ydh')
-
-var RCall = ['--no-restore','--no-save','vds_impute.R']
-
-
-var opts = { cwd: undefined,
-             env: process.env
-           }
 
 _configure(function(e,r){
     if(e) throw new Error(e)
