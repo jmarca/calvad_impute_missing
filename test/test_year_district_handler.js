@@ -181,5 +181,52 @@ describe('year district handler should work',function(){
            })
            return null
        })
+    it('should spawn jobs only for missing amelia files,rdata=true version',
+       function(done){
+           var filecount = 0;
+           var q = queue(1)
+           var districts = ['files','morefiles']
+           var seen = {'files':0
+                       ,'morefiles':0}
+           var fake_R_call = function(Ropts,cb){
+               console.log('fake R call:',Ropts.opts.env.RDISTRICT)
+               filecount++
+               seen[Ropts.opts.env.RDISTRICT] = 1
+               if(Ropts.file === todoamelia){
+                   cb(null,1)
+               }else{
+                   cb(null,-1)
+               }
+               return null
+           }
+           districts.forEach(function(d){
+               var o ={env:{}}
+               o.env['RYEAR'] = year
+               o.env['RDISTRICT']=d
+               o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+               o.env['R_CONFIG']=config_file
+               o.calvad = config.calvad
+               o.district = d
+               console.log(d)
+               o.rdata=true
+
+               // putting true at the end forces a call to double check
+               // whether the purported amelia file is in fact a good
+               // amelia result
+               //
+               console.log('in the call loop: ',o.env.RDISTRICT)
+               q.defer(year_district_handler,o,fake_R_call,true)
+           })
+           q.awaitAll(function(e,r){
+               should.not.exist(e)
+               should.exist(r)
+               seen.should.eql(
+                   {'files':1
+                    ,'morefiles':1}
+                              )
+               return done()
+           })
+           return null
+       })
     return null
 })
