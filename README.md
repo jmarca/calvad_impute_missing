@@ -336,3 +336,17 @@ extensively in testing.  In production just set it to "vdsdata".
 The trackingdb should be set to "vdsdata%2ftracking" in production,
 and the dbname to "vdsdata".  The design and view aren't used here,
 but are used in other CalVAD modules.
+
+# Feb 2016 notes
+
+The test.config.json should have the following bit at the end
+
+```
+    "calvad":{
+        "vdspath":"./tests/testthat/evenmorefiles/",
+        "districts":["D01","D03","D04","D06","D09","D10","D11","D12"],
+        "years":[2012]
+    }
+```
+
+This will allow the trigger_vds_impute.js test to run properly.
