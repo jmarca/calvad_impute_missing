@@ -7,6 +7,7 @@ var fs = require('fs');
 var queue = require('queue-async');
 var _ = require('lodash');
 var suss_detector_id = require('suss_detector_id')
+var argv = require('minimist')(process.argv.slice(2));
 
 var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 
@@ -18,7 +19,7 @@ var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 //var statedb = 'vdsdata%2ftracking'
 
 // configuration stuff
-var rootdir = path.normalize(__dirname)
+var rootdir = path.normalize(process.cwd())
 var Rhome = path.normalize(rootdir+'/R')
 var opts = {cwd: Rhome
            ,env: process.env
@@ -27,6 +28,12 @@ var opts = {cwd: Rhome
 var config_file = path.normalize(rootdir+'/config.json')
 var config
 var config_okay = require('config_okay')
+
+if(argv.config !== undefined){
+    config_file = path.normalize(rootdir+'/'+argv.config)
+}
+console.log('setting configuration file to ',config_file,'.  Change with the --config option.')
+
 
 function _configure(cb){
     if(config === undefined){
@@ -110,10 +117,27 @@ var opts = { cwd: undefined,
 
 _configure(function(e,r){
     if(e) throw new Error(e)
+    if(config.calvad !== undefined){
+        // override the above hard coding stuffs
+        if(config.calvad.districts !== undefined){
+            if(!Array.isArray(config.calvad.districts)){
+                config.calvad.districts = [config.calvad.districts]
+            }
+            districts = config.calvad.districts
+        }
+        if(config.calvad.years !== undefined){
+            if(!Array.isArray(config.calvad.years)){
+                config.calvad.years = [config.calvad.years]
+            }
+            years = config.calvad.years
+        }
 
+    }
     var ydq = queue(1);
+    console.log(districts)
     years.forEach(function(year){
         districts.forEach(function(district){
+            console.log(district)
             var o = _.clone(opts,true)
             o.env['RYEAR'] = year
             o.env['RDISTRICT']=district

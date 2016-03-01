@@ -17,6 +17,7 @@
     "couch_set_state": "jmarca/couch_set_state.git",
     "glob": "",
     "lodash": "",
+    "minimist": "^1.2.0",
     "pg": "",
     "queue-async": "",
     "rstats_couch_utils": "jmarca/rstats_couch_utils",

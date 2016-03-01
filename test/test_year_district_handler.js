@@ -181,11 +181,11 @@ describe('year district handler should work',function(){
            })
            return null
        })
-    it('should spawn jobs only for missing amelia files,rdata=true version',
+    it('should spawn jobs for multiple directories, rdata=false',
        function(done){
            var filecount = 0;
            var q = queue(1)
-           var districts = ['files','morefiles']
+           var districts = ['files','evenmorefiles','morefiles']
            var seen = {'files':0
                        ,'morefiles':0}
            var fake_R_call = function(Ropts,cb){
@@ -215,14 +215,16 @@ describe('year district handler should work',function(){
                // amelia result
                //
                console.log('in the call loop: ',o.env.RDISTRICT)
-               q.defer(year_district_handler,o,fake_R_call,true)
+               q.defer(year_district_handler,o,fake_R_call,false)
            })
            q.awaitAll(function(e,r){
                should.not.exist(e)
                should.exist(r)
                seen.should.eql(
-                   {'files':1
-                    ,'morefiles':1}
+                   {'files':0
+                    ,'evenmorefiles':1
+                    ,'morefiles':1
+                   }
                               )
                return done()
            })
