@@ -43,7 +43,7 @@ describe('year district handler should work',function(){
 
     it('should spawn jobs only for missing amelia files,rdata=false',
        function(done){
-           var filecount = 0;
+           var filecount = 0
            var fake_R_call = function(Ropts,cb){
                // this should never get called
                filecount++
@@ -72,7 +72,7 @@ describe('year district handler should work',function(){
        })
     it('should spawn jobs only for missing amelia files,rdata=true',
        function(done){
-           var filecount = 0;
+           var filecount = 0
            var fake_R_call = function(Ropts,cb){
                // this should never get called
                filecount++
@@ -101,7 +101,7 @@ describe('year district handler should work',function(){
        })
     it('should spawn jobs only for missing amelia files,rdata=false version',
        function(done){
-           var filecount = 0;
+           var filecount = 0
            var fake_R_call = function(Ropts,cb){
                should.exist(Ropts)
                Ropts.should.have.property('file')
@@ -142,7 +142,7 @@ describe('year district handler should work',function(){
        })
     it('should spawn jobs only for missing amelia files,rdata=true version',
        function(done){
-           var filecount = 0;
+           var filecount = 0
            var fake_R_call = function(Ropts,cb){
                should.exist(Ropts)
                Ropts.should.have.property('file')
@@ -183,7 +183,7 @@ describe('year district handler should work',function(){
        })
     it('should spawn jobs for multiple directories, rdata=false',
        function(done){
-           var filecount = 0;
+           var filecount = 0
            var q = queue(1)
            var districts = ['files','evenmorefiles','morefiles']
            var seen = {'files':0
