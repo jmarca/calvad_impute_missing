@@ -19,7 +19,7 @@
     "lodash": "",
     "minimist": "^1.2.0",
     "pg": "",
-    "queue-async": "",
+    "d3-queue": "",
     "rstats_couch_utils": "jmarca/rstats_couch_utils",
     "rstats_remote_files": "jmarca/rstats_remote_files",
     "superagent": "",
