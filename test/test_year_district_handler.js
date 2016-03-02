@@ -100,14 +100,13 @@ describe('year district handler should work',function(){
                return done()
            })
        })
-    it('should spawn jobs only for missing amelia files,rdata=false version',
+    it('should spawn jobs only for missing AND broken (check is true) amelia files,rdata=false version',
        function(done){
            var filecount = 0;
            var fake_R_call = function(Ropts,cb){
-               should.exist(Ropts)
-               Ropts.should.have.property('file')
-               console.log(Ropts.file)
-               Ropts.file.should.be.oneOf([todoamelia,notamelia])
+               // should not get here because the only zip file is
+               // 1211682_ML_2012.txt.xz, and there is a corresponding
+               // imputed file, that is not empty (by design).
                filecount++
                if(Ropts.file === todoamelia){
                    cb(null,1)
@@ -141,10 +140,12 @@ describe('year district handler should work',function(){
            })
            return null
        })
-    it('should spawn jobs only for missing amelia files,rdata=true version',
+    it('should spawn jobs only for missing OR broken (check is true) amelia files,rdata=true version',
        function(done){
            var filecount = 0;
            var fake_R_call = function(Ropts,cb){
+               // should get here just once, for the 801320 file,
+               // because that RData imputation file is broken
                should.exist(Ropts)
                Ropts.should.have.property('file')
                console.log(Ropts.file)
