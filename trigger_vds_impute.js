@@ -11,7 +11,7 @@ var argv = require('minimist')(process.argv.slice(2));
 
 var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 
-var year_district_handler = require('./lib/ydh')
+var year_district_handler = require('./lib/ydh_imputations.js')
 
 var RCall = ['--no-restore','--no-save','vds_impute.R']
 
