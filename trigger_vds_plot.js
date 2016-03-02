@@ -8,7 +8,7 @@ var queue = require('queue-async');
 var _ = require('lodash');
 var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
-
+var argv = require('minimist')(process.argv.slice(2));
 
 var year_district_handler = require('./lib/ydh')
 
@@ -16,10 +16,7 @@ var RCall = ['--no-restore','--no-save','vds_impute.R']
 
 var force_plot = true //process.env.CALVAD_FORCE_PLOT
 var check_existing = process.env.CALVAD_CHECK_EXISTING_PLOT
-var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
-
 var years = [2012]//,2011];
-
 var districts = [
     'D03'  //
     ,'D04' //
@@ -43,12 +40,26 @@ var config_file = path.normalize(rootdir+'/config.json')
 var config
 var config_okay = require('config_okay')
 
+// process command line arguments
+if(argv.config !== undefined){
+    config_file = path.normalize(rootdir+'/'+argv.config)
+}
+console.log('setting configuration file to ',config_file,'.  Change with the --config option.')
+
+
 function _configure(cb){
     if(config === undefined){
         config_okay(config_file,function(e,c){
             if(e) throw new  Error(e)
             config = c
             return cb(null,config)
+            if(config.force_plot !== undefined){
+                force_plot = config.force_plot
+            }
+            if(config.check_existing_plot){
+                check_existing = config.check_existing_plot
+            }
+
         })
         return null
     }else{
@@ -92,48 +103,6 @@ var trigger_R_job = function(task,done){
         // throw new Error('die')
         return done()
     })
-}
-
-function vdsfile_handler(opt){
-    // this checks couchdb
-    return function(f,cb){
-        var did = suss_detector_id(f)
-
-        if(check_existing){
-	    console.log({'db':statedb
-			 ,'doc':did
-			 ,'year':'_attachments'
-			 ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-			})
-            couch_check({'db':statedb
-			 ,'doc':did
-			 ,'year':'_attachments'
-			 ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-			}
-			,function(err,state){
-                            if(err) return cb(err)
-                            console.log(state)
-                            if(!state){
-				console.log('push to queue '+f)
-				trigger_R_job({'file':f
-                                               ,'opts':opt
-                                              },cb);
-                            }else{
-                                console.log('already done')
-                                cb() // move on to the next
-                            }
-                            return null
-			});
-            return null
-	}else{
-            console.log('push to queue '+f)
-            trigger_R_job({'file':f
-                           ,'opts':opt
-                          },cb);
-	    return null
-	}
-
-    }
 }
 
 
