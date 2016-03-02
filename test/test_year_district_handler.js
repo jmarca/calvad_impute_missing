@@ -2,7 +2,7 @@ var should = require('should')
 var vds_files = require('../lib/vds_files.js')
 var config = {}
 
-var year_district_handler = require('../lib/ydh')
+var year_district_handler = require('../lib/ydh_imputations.js')
 
 var year = 2012
 var queue = require('queue-async')
@@ -52,12 +52,13 @@ describe('year district handler should work',function(){
            }
 
            var o ={env:{}}
+           o.calvad = config.calvad
+           o.calvad.vdspath = './tests/testthat/'
            o.env['RYEAR'] = year
            o.env['RDISTRICT']=config.district
-           o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+           o.env['CALVAD_PEMS_ROOT']=o.calvad.vdspath
            o.env['R_CONFIG']=config_file
            o.rdata=false
-           o.calvad = config.calvad
            o.district = config.district
 
            var q = queue()

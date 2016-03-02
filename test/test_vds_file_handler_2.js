@@ -48,11 +48,12 @@ describe('vdsfile_handler_2 should work',function(){
            }
 
            var o ={env:{}}
+           o.calvad = config.calvad
+           o.calvad.vdspath = './tests/testthat/'
            o.env['RYEAR'] = year
            o.env['RDISTRICT']=config.district
-           o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
+           o.env['CALVAD_PEMS_ROOT']=o.calvad.vdspath
            o.env['R_CONFIG']=config_file
-           o.calvad = config.calvad
            o.district = config.district
 
            vdsfile_handler_2(o,fake_R_call,false,function(e,handler){

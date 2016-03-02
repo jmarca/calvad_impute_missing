@@ -81,7 +81,8 @@ describe('trigger_vds_impute',function(){
                        '322682_ML_2012': 1,
                        '411682_ML_2012': 1,
                        '1011682_ML_2012': 1,
-                       '1122682_ML_2012': 1
+                       '1122682_ML_2012': 1,
+                       '5/N/LOUISE_AVE/1007610_ML_2012':1
                    })
                    queued.should.eql({
                        '322682_ML_2012':1,
