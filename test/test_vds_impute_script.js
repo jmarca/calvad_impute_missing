@@ -7,7 +7,7 @@ var fs = require('fs')
 var year_district_handler = require('../lib/ydh_imputations.js')
 
 var year = 2012
-var queue = require('queue-async')
+var queue = require('d3-queue').queue
 
 var path = require('path')
 
@@ -31,7 +31,19 @@ before(function(done){
 
 
 describe('trigger_vds_impute',function(){
-
+    var logfile = 'log/testvdsimpute.log'
+    after(function(done){
+        // uncomment the following when test is stable
+        // var q = queue()
+        // q.defer(fs.unlink,logfile)
+        // q.defer(fs.unlink,'./log/vdsimpute_1122682_2012.log')
+        // q.defer(fs.unlink,'./log/vdsimpute_322682_2012.log')
+        // q.await(function(e,r){
+        //     return done()
+        // })
+        // and comment out the following line
+        return done()
+    })
     it('should trigger the function, search 4 files, process 2 files',
        function(done){
            var commandline = ['trigger_vds_impute.js','--config','test.config.json']
@@ -39,7 +51,6 @@ describe('trigger_vds_impute',function(){
 
            job.stderr.setEncoding('utf8')
            job.stdout.setEncoding('utf8')
-           var logfile = 'log/testvdsimpute.log'
            var logstream = fs.createWriteStream(logfile
                                                 ,{flags: 'a'
                                                   ,encoding: 'utf8'

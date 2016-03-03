@@ -5,7 +5,7 @@ var config = {}
 var year_district_handler = require('../lib/ydh_imputations.js')
 
 var year = 2012
-var queue = require('queue-async')
+var queue = require('d3-queue').queue
 
 var path = require('path')
 

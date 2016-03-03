@@ -124,15 +124,15 @@ _configure(function(e,r){
     console.log(districts)
     years.forEach(function(year){
         districts.forEach(function(district){
-            console.log(district)
-            var o = _.clone(opts,true)
-            o.env['RYEAR'] = year
-            o.env['RDISTRICT']=district
+            var o = Object.assign({},opts)
+            o.env = Object.assign({},opts.env)
+            o.env.RYEAR = year
+            o.env.RDISTRICT=district
             o.district = district
 
-            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
-            o.env['R_CONFIG']=config_file
-            o.calvad = config.calvad
+            o.env.CALVAD_PEMS_ROOT=config.calvad.vdspath
+            o.env.R_CONFIG=config_file
+            o.calvad = Object.assign({},config.calvad)
 
             ydq.defer(year_district_handler,o,trigger_R_job,double_check_amelia)
             return null
