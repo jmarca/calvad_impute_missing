@@ -11,12 +11,13 @@ var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
 var argv = require('minimist')(process.argv.slice(2));
 
-var year_district_handler = require('./lib/ydh')
-
-var RCall = ['--no-restore','--no-save','vds_impute.R']
-
 var force_plot = true //process.env.CALVAD_FORCE_PLOT
 var check_existing = process.env.CALVAD_CHECK_EXISTING_PLOT
+
+var year_district_handler = require('./lib/ydh_plots.js')
+
+var RCall = ['--no-restore','--no-save','vds_plots.R']
+
 var years = [2012]//,2011];
 var districts = [
     'D03'  //
@@ -107,47 +108,41 @@ var trigger_R_job = function(task,done){
 }
 
 
-function year_district_handler(opt,callback){
-    // get the files, load the queue
-
-    // check if there is a plot file in couchdb
-    var handler = vdsfile_handler(opt)
-    console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles_local(
-        {district:opt.env['RDISTRICT']
-        ,year:opt.env['RYEAR']}
-      ,function(err,list){
-           if(err) throw new Error(err)
-           console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-           var fileq = queue(num_CPUs);
-           list.forEach(function(f,idx){
-               console.log('queue up ',f)
-               fileq.defer(handler,f)
-               return null
-           });
-           fileq.await(function(e){
-               return callback(e)
-           })
-           return null
-       })
-}
 
 _configure(function(e,r){
     if(e) throw new Error(e)
+    if(config.calvad !== undefined){
+        // override the above hard coding stuffs
+        if(config.calvad.districts !== undefined){
+            if(!Array.isArray(config.calvad.districts)){
+                config.calvad.districts = [config.calvad.districts]
+            }
+            districts = config.calvad.districts
+        }
+        if(config.calvad.years !== undefined){
+            if(!Array.isArray(config.calvad.years)){
+                config.calvad.years = [config.calvad.years]
+            }
+            years = config.calvad.years
+        }
+
+    }
 
     var ydq = queue(1);
     years.forEach(function(year){
         districts.forEach(function(district){
-            var o = _.clone(opts,true)
-            o.env['RYEAR'] = year
-            o.env['RDISTRICT']=district
+            var o = Object.assign({},opts)
+            o.env = Object.assign({},opts.env)
+            o.env.RYEAR = year
+            o.env.RDISTRICT=district
+            o.district = district
 
-            o.env['CALVAD_PEMS_ROOT']=config.calvad.vdspath
-            o.env['R_CONFIG']=config_file
-            o.calvad = config.calvad
+            o.env.CALVAD_PEMS_ROOT=config.calvad.vdspath
+            o.env.R_CONFIG=config_file
+            o.calvad = Object.assign({},config.calvad)
             o.couchdb = config.couchdb
 
-            ydq.defer(year_district_handler,o,trigger_R_job,double_check_amelia)
+            ydq.defer(year_district_handler,o,trigger_R_job,check_existing)
             //ydq.defer(year_district_handler,o)
             return null
         })

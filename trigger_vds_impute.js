@@ -122,7 +122,6 @@ _configure(function(e,r){
 
     }
     var ydq = queue(1);
-    console.log(districts)
     years.forEach(function(year){
         districts.forEach(function(district){
             var o = Object.assign({},opts)
