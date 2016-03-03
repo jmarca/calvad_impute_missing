@@ -3,7 +3,8 @@ var util  = require('util'),
     spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var queue = require('queue-async');
+var queue = require('d3-queue').queue
+
 var _ = require('lodash');
 var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
