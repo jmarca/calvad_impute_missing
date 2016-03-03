@@ -22,7 +22,7 @@ before(function(done){
         config = c
         config.district = district // fake out the get_local_files.js
 
-        FIXME initialize temporary couchdb database
+        //FIXME initialize temporary couchdb database
 
         return done()
     })
