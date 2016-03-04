@@ -89,7 +89,7 @@ describe('year district handler should work',function(){
                     ,'morefiles':0
                    }
                )
-               filecount.should.eql(9)
+               filecount.should.eql(10)
                return done()
            })
            return null
