@@ -1,22 +1,17 @@
 /*global require process console */
 
-var util  = require('util'),
-    spawn = require('child_process').spawn;
-var path = require('path');
-var fs = require('fs');
+var spawn = require('child_process').spawn
+var path = require('path')
+var fs = require('fs')
 var queue = require('d3-queue').queue
 
-var _ = require('lodash');
-var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
-var argv = require('minimist')(process.argv.slice(2));
+var argv = require('minimist')(process.argv.slice(2))
 
 var force_plot = true //process.env.CALVAD_FORCE_PLOT
 var check_existing = process.env.CALVAD_CHECK_EXISTING_PLOT
 
 var year_district_handler = require('./lib/ydh_plots.js')
-
-var RCall = ['--no-restore','--no-save','vds_plots.R']
 
 var years = [2012]//,2011];
 var districts = [
@@ -32,7 +27,8 @@ var districts = [
 ]
 
 // configuration stuff
-var rootdir = path.normalize(__dirname)
+var rootdir = path.normalize(process.cwd())
+var RCall = ['--no-restore','--no-save','vds_plots.R']
 var Rhome = path.normalize(rootdir+'/R')
 var opts = {cwd: Rhome
            ,env: process.env
@@ -54,13 +50,28 @@ function _configure(cb){
         config_okay(config_file,function(e,c){
             if(e) throw new  Error(e)
             config = c
+            if(config.calvad !== undefined){
+                // override the above hard coding stuffs
+                if(config.calvad.districts !== undefined){
+                    if(!Array.isArray(config.calvad.districts)){
+                        config.calvad.districts = [config.calvad.districts]
+                    }
+                    districts = config.calvad.districts
+                }
+                if(config.calvad.years !== undefined){
+                    if(!Array.isArray(config.calvad.years)){
+                        config.calvad.years = [config.calvad.years]
+                    }
+                    years = config.calvad.years
+                }
+                if(config.calvad.force_plot !== undefined){
+                    force_plot = config.calvad.force_plot
+                }
+                if(config.calvad.check_existing_plot){
+                    check_existing = config.calvad.check_existing_plot
+                }
+            }
             return cb(null,config)
-            if(config.force_plot !== undefined){
-                force_plot = config.force_plot
-            }
-            if(config.check_existing_plot){
-                check_existing = config.check_existing_plot
-            }
 
         })
         return null
@@ -78,26 +89,26 @@ function _configure(cb){
  *
  */
 
-var trigger_R_job = function(task,done){
+function trigger_R_job(task,done){
+    var R,logfile,logstream,errstream
     var file = task.file
     var did = suss_detector_id(file)
-    var opts = _.clone(task.opts)
+    var _opts = Object.assign({},task.opts)
 
-    opts.env['FILE']=file
+    _opts.env.FILE=file
     console.log('processing ',file)
-
-    var R  = spawn('Rscript', RCall, opts);
+    R  = spawn('Rscript', RCall, _opts)
     R.stderr.setEncoding('utf8')
     R.stdout.setEncoding('utf8')
-    var logfile = 'log/vdsplot_'+did+'_'+opts.env['RYEAR']+'.log'
-    var logstream = fs.createWriteStream(logfile
+    logfile = 'log/vdsplot_'+did+'_'+_opts.env.RYEAR+'.log'
+    logstream = fs.createWriteStream(logfile
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
-                                         ,mode: 0666 })
-    var errstream = fs.createWriteStream(logfile
+                                         ,mode: 0o666 })
+    errstream = fs.createWriteStream(logfile
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
-                                         ,mode: 0666 })
+                                         ,mode: 0o666 })
     R.stdout.pipe(logstream)
     R.stderr.pipe(errstream)
     R.on('exit',function(code){
@@ -107,43 +118,24 @@ var trigger_R_job = function(task,done){
     })
 }
 
-
-
 _configure(function(e,r){
+    var ydq
     if(e) throw new Error(e)
-    if(config.calvad !== undefined){
-        // override the above hard coding stuffs
-        if(config.calvad.districts !== undefined){
-            if(!Array.isArray(config.calvad.districts)){
-                config.calvad.districts = [config.calvad.districts]
-            }
-            districts = config.calvad.districts
-        }
-        if(config.calvad.years !== undefined){
-            if(!Array.isArray(config.calvad.years)){
-                config.calvad.years = [config.calvad.years]
-            }
-            years = config.calvad.years
-        }
-
-    }
-
-    var ydq = queue(1);
+    ydq = queue(1)
     years.forEach(function(year){
         districts.forEach(function(district){
             var o = Object.assign({},opts)
             o.env = Object.assign({},opts.env)
             o.env.RYEAR = year
             o.env.RDISTRICT=district
-            o.district = district
+            //o.district = district
 
             o.env.CALVAD_PEMS_ROOT=config.calvad.vdspath
             o.env.R_CONFIG=config_file
             o.calvad = Object.assign({},config.calvad)
             o.couchdb = config.couchdb
 
-            ydq.defer(year_district_handler,o,trigger_R_job,check_existing)
-            //ydq.defer(year_district_handler,o)
+            ydq.defer(year_district_handler,o,trigger_R_job)
             return null
         })
         return null
@@ -159,4 +151,4 @@ _configure(function(e,r){
 
 })
 
-1;
+1

@@ -1,24 +1,18 @@
 /*global require process console */
 
-var util  = require('util'),
-    spawn = require('child_process').spawn;
-var path = require('path');
-var fs = require('fs');
+var spawn = require('child_process').spawn
+var path = require('path')
+var fs = require('fs')
 var queue = require('d3-queue').queue
 
-var _ = require('lodash');
 var suss_detector_id = require('suss_detector_id')
-var argv = require('minimist')(process.argv.slice(2));
+var argv = require('minimist')(process.argv.slice(2))
 
 var double_check_amelia = process.env.CALVAD_DOUBLE_CHECK_VDS_AMELIA
 
 var year_district_handler = require('./lib/ydh_imputations.js')
 
-var RCall = ['--no-restore','--no-save','vds_impute.R']
-
-
 var years = [2012]//,2011];
-
 var districts = [
     'D03'  //
     ,'D04' //
@@ -31,9 +25,9 @@ var districts = [
     ,'D12' //
 ]
 
-
 // configuration stuff
 var rootdir = path.normalize(process.cwd())
+var RCall = ['--no-restore','--no-save','vds_impute.R']
 var Rhome = path.normalize(rootdir+'/R')
 var opts = {cwd: Rhome
            ,env: process.env
@@ -43,6 +37,7 @@ var config_file = path.normalize(rootdir+'/config.json')
 var config
 var config_okay = require('config_okay')
 
+// process command line arguments
 if(argv.config !== undefined){
     config_file = path.normalize(rootdir+'/'+argv.config)
 }
@@ -53,7 +48,29 @@ function _configure(cb){
     if(config === undefined){
         config_okay(config_file,function(e,c){
             if(e) throw new  Error(e)
+            opts.env.R_CONFIG=config_file
             config = c
+            if(config.calvad !== undefined){
+                // override the above hard coding stuffs
+                if(config.calvad.districts !== undefined){
+                    if(!Array.isArray(config.calvad.districts)){
+                        config.calvad.districts = [config.calvad.districts]
+                    }
+                    districts = config.calvad.districts
+                }
+                if(config.calvad.years !== undefined){
+                    if(!Array.isArray(config.calvad.years)){
+                        config.calvad.years = [config.calvad.years]
+                    }
+                    years = config.calvad.years
+                }
+                if(config.calvad.double_check_amelia !== undefined){
+                    double_check_amelia= config.calvad.double_check_amelia
+                }
+                opts.env.CALVAD_PEMS_ROOT=config.calvad.vdspath
+
+            }
+
             return cb(null,config)
         })
         return null
@@ -73,26 +90,26 @@ function _configure(cb){
  *
  */
 
-var trigger_R_job = function(task,done){
+function trigger_R_job(task,done){
+    var R,logfile,logstream,errstream
     var file = task.file
     var did = suss_detector_id(file)
-    var opts = _.clone(task.opts)
+    var _opts = Object.assign({},task.opts)
 
-    opts.env['FILE']=file
+    _opts.env.FILE=file
     console.log('processing ',file)
-
-    var R  = spawn('Rscript', RCall, opts);
+    R  = spawn('Rscript', RCall, _opts)
     R.stderr.setEncoding('utf8')
     R.stdout.setEncoding('utf8')
-    var logfile = 'log/vdsimpute_'+did+'_'+opts.env['RYEAR']+'.log'
-    var logstream = fs.createWriteStream(logfile
-                                        ,{flags: 'a'
-                                         ,encoding: 'utf8'
-                                         ,mode: 0666 })
-    var errstream = fs.createWriteStream(logfile
-                                        ,{flags: 'a'
-                                         ,encoding: 'utf8'
-                                         ,mode: 0666 })
+    logfile = 'log/vdsimpute_'+did+'_'+_opts.env.RYEAR+'.log'
+    logstream = fs.createWriteStream(logfile
+                                     ,{flags: 'a'
+                                       ,encoding: 'utf8'
+                                       ,mode: 0o666 })
+    errstream = fs.createWriteStream(logfile
+                                     ,{flags: 'a'
+                                       ,encoding: 'utf8'
+                                       ,mode: 0o666 })
     R.stdout.pipe(logstream)
     R.stderr.pipe(errstream)
     R.on('exit',function(code){
@@ -100,38 +117,20 @@ var trigger_R_job = function(task,done){
         //throw new Error('die')
         return done()
     })
-    // return done()
 }
 
 _configure(function(e,r){
+    var ydq
     if(e) throw new Error(e)
-    if(config.calvad !== undefined){
-        // override the above hard coding stuffs
-        if(config.calvad.districts !== undefined){
-            if(!Array.isArray(config.calvad.districts)){
-                config.calvad.districts = [config.calvad.districts]
-            }
-            districts = config.calvad.districts
-        }
-        if(config.calvad.years !== undefined){
-            if(!Array.isArray(config.calvad.years)){
-                config.calvad.years = [config.calvad.years]
-            }
-            years = config.calvad.years
-        }
-
-    }
-    var ydq = queue(1);
+    ydq = queue(1)
     years.forEach(function(year){
         districts.forEach(function(district){
             var o = Object.assign({},opts)
             o.env = Object.assign({},opts.env)
             o.env.RYEAR = year
             o.env.RDISTRICT=district
-            o.district = district
+            //o.district = district
 
-            o.env.CALVAD_PEMS_ROOT=config.calvad.vdspath
-            o.env.R_CONFIG=config_file
             o.calvad = Object.assign({},config.calvad)
 
             ydq.defer(year_district_handler,o,trigger_R_job,double_check_amelia)
@@ -146,10 +145,8 @@ _configure(function(e,r){
         console.log('ydq has drained')
         return null
     })
-
     return null
 
 })
 
-
-1;
+1

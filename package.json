@@ -26,11 +26,16 @@
     "suss_detector_id": "jmarca/suss_detector_id.git"
   },
   "devDependencies": {
+    "babel-eslint": "^5.0.0",
+    "eslint": "^2.2.0",
+    "eslint-plugin-babel": "^3.1.0",
+    "istanbul": "^0.4.2",
     "mocha": "",
     "should": ""
   },
   "scripts": {
-    "test": "mocha"
+    "test": "./node_modules/mocha/bin/mocha ./test/* -R list --timeout 50000",
+    "test-travis": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec --check-leaks --timeout 50000 ./test/test_*.js"
   },
   "repository": {
     "type": "git",

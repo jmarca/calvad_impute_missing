@@ -25,5 +25,6 @@ if('' == file || is.na(file)){
   print('assign a file to process to the FILE environment variable')
   quit(save='no',status=3)
 }
+print(paste ('loading',file,'into R to see if contains a good imputation result'))
 status <- calvadrscripts::amelia_output_file_status(file,check_times=TRUE)
 quit(save='no',status=status)

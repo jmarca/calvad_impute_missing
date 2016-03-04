@@ -1,3 +1,4 @@
+/*eslint-env node, mocha */
 var should = require('should')
 var vds_files = require('../lib/vds_files.js')
 
@@ -8,16 +9,14 @@ var config={env:{}}
 var config_okay = require('config_okay')
 
 before(function(done){
-    var district = 'files' // fake out the finder
-
     config_okay(config_file,function(err,c){
         if(err){
             throw new Error('node.js needs a good croak module')
         }
-        config.env['RYEAR'] = 2012
-        config.env['RDISTRICT']=c.district
-        config.env['CALVAD_PEMS_ROOT']=c.calvad.vdspath
-        config.env['R_CONFIG']=config_file
+        config.env.RYEAR = 2012
+        config.env.RDISTRICT=c.district
+        config.env.CALVAD_PEMS_ROOT=c.calvad.vdspath
+        config.env.R_CONFIG=config_file
         config.calvad = c.calvad
         config.district = c.district
 

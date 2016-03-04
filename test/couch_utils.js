@@ -1,20 +1,16 @@
 /*global require exports */
 var superagent = require('superagent')
-
 var queue = require('d3-queue').queue
-
-
-var _ = require('lodash')
 var should = require('should')
 
 function create_tempdb(task,db,cb){
+    var cdb
     if(typeof db === 'function'){
         throw new Error('db required now')
     }
-    var cdb =
+    cdb =
         [task.options.couchdb.host+':'+task.options.couchdb.port
          ,db].join('/')
-    console.log(cdb)
     superagent.put(cdb)
     .type('json')
     .auth(task.options.couchdb.auth.username
@@ -26,13 +22,13 @@ function create_tempdb(task,db,cb){
 }
 
 function delete_tempdb(task,db,cb){
+    var cdb
     if(typeof db === 'function'){
         throw new Error('db required now')
     }
-    var cdb =
+    cdb =
         [task.options.couchdb.host+':'+task.options.couchdb.port
         ,db].join('/')
-    console.log(cdb)
     superagent.del(cdb)
     .type('json')
     .auth(task.options.couchdb.auth.username
@@ -44,7 +40,6 @@ function delete_tempdb(task,db,cb){
 
 function put_file(file,couch,cb){
 
-    console.log(couch)
     var db_dump = require(file)
     superagent.post(couch)
     .type('json')
@@ -73,16 +68,17 @@ function load_detector(task,cb){
     q.await(function(err,d1,d2,d3,d4){
         should.not.exist(err)
         superagent.get(cdb)
-        .type('json')
-        .end(function(e,r){
-            should.not.exist(e)
-            should.exist(r)
-            r.should.have.property('text')
-            var superagent_sucks = JSON.parse(r.text)
-            superagent_sucks.should.have.property('doc_count',d1+d2+d3+d4)
-            return cb()
+            .type('json')
+            .end(function(e,r){
+                var superagent_sucks
+                should.not.exist(e)
+                should.exist(r)
+                r.should.have.property('text')
+                superagent_sucks = JSON.parse(r.text)
+                superagent_sucks.should.have.property('doc_count',d1+d2+d3+d4)
+                return cb()
 
-        })
+            })
         return null
     })
     return null
@@ -115,12 +111,11 @@ function demo_db_before(config){
 function demo_db_after(config){
     return  function(done){
         var task = {options:config}
-        var dbs = [config.couchdb.tempdb
+        var dbs = [config.couchdb.testdb
                   ]
-
-
         var q = queue()
         dbs.forEach(function(db){
+            console.log('dropping '+db)
             if(!db) return null
             q.defer(delete_tempdb,task,db)
             return null
