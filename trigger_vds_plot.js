@@ -8,9 +8,6 @@ var queue = require('d3-queue').queue
 var suss_detector_id = require('suss_detector_id')
 var argv = require('minimist')(process.argv.slice(2))
 
-var force_plot = true //process.env.CALVAD_FORCE_PLOT
-var check_existing = process.env.CALVAD_CHECK_EXISTING_PLOT
-
 var year_district_handler = require('./lib/ydh_plots.js')
 
 var years = [2012]//,2011];
@@ -63,12 +60,6 @@ function _configure(cb){
                         config.calvad.years = [config.calvad.years]
                     }
                     years = config.calvad.years
-                }
-                if(config.calvad.force_plot !== undefined){
-                    force_plot = config.calvad.force_plot
-                }
-                if(config.calvad.check_existing_plot){
-                    check_existing = config.calvad.check_existing_plot
                 }
             }
             return cb(null,config)

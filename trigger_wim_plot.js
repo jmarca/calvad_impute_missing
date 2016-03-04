@@ -35,6 +35,7 @@ var R;
  */
 
 var trigger_R_job = function(task,done){
+    var R,logfile,logstream,errstream
     var wim = task.wim
 
     task.env['RYEAR']=task.year
@@ -43,16 +44,20 @@ var trigger_R_job = function(task,done){
     task.env['WIM_PLOT_PRE']=1
     task.env['WIM_PLOT_POST']=1
 
-    var R  = spawn('Rscript', RCall, task);
+    R  = spawn('Rscript', RCall, task);
     R.stderr.setEncoding('utf8')
     R.stdout.setEncoding('utf8')
-    var logfile = 'log/wimplot_'+wim+'_'+task.year+'.log'
-    var logstream = fs.createWriteStream(logfile
-                                        ,{flags: 'a'
-                                         ,encoding: 'utf8'
-                                         ,mode: 0666 })
+    logfile = 'log/wimplot_'+wim+'_'+task.year+'.log'
+    logstream = fs.createWriteStream(logfile
+                                     ,{flags: 'a'
+                                       ,encoding: 'utf8'
+                                       ,mode: 0o666 })
+    errstream = fs.createWriteStream(logfile
+                                     ,{flags: 'a'
+                                       ,encoding: 'utf8'
+                                       ,mode: 0o666 })
     R.stdout.pipe(logstream)
-    R.stderr.pipe(logstream)
+    R.stderr.pipe(errstream)
     R.on('exit',function(code){
         console.log('got exit: '+code+', for ',wim)
         // testing

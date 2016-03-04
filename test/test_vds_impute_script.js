@@ -1,31 +1,36 @@
 /*eslint-env node, mocha */
 
 
-var config = {}
 var spawn = require('child_process').spawn
 var fs = require('fs')
 
 var queue = require('d3-queue').queue
 
 var logfile = 'log/testvdsimpute.log'
-var path = require('path')
-var rootdir = path.normalize(process.cwd())
-var config_file = rootdir+'/test.config.json'
-var config_okay = require('config_okay')
+
+// not using config here, so comment out.  look at trigger_plot test
+// for an example of how to set some specific variables and mock up a
+// dummy config by writing out the config to a temp file then deleting
+// it
+//
+//
+//var path = require('path')
+//var rootdir = path.normalize(process.cwd())
+// var config_file = rootdir+'/test.config.json'
+// var config_okay = require('config_okay')
+// var config = {}
 require('should')
 
-before(function(done){
-    var district = 'files' // fake out the finder
-
-    config_okay(config_file,function(err,c){
-        if(err){
-            throw new Error('node.js needs a good croak module')
-        }
-        config = c
-        return done()
-    })
-    return null
-})
+// before(function(done){
+//     config_okay(config_file,function(err,c){
+//         if(err){
+//             throw new Error('node.js needs a good croak module')
+//         }
+//         config = c
+//         return done()
+//     })
+//     return null
+// })
 
 after(function(done){
     var q = queue()
