@@ -1,28 +1,75 @@
 /*global require process console */
 
-var util  = require('util'),
-    spawn = require('child_process').spawn;
-var path = require('path');
-var fs = require('fs');
-var queue = require('queue-async');
-var _ = require('lodash');
-var get_files = require('./lib/get_files')
+var spawn = require('child_process').spawn
+var path = require('path')
+var fs = require('fs')
+var queue = require('d3-queue').queue
+
 var suss_detector_id = require('suss_detector_id')
-var couch_check = require('couch_check_state')
+var argv = require('minimist')(process.argv.slice(2))
 
-var force_plot = true //process.env.CALVAD_FORCE_PLOT
-var check_existing = process.env.CALVAD_CHECK_EXISTING_PLOT
-var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length;
+var year_district_handler = require('./lib/ydh_plots.js')
 
-// for testing, just one process at a time
-//num_CPUs=1
+var years = [2012]//,2011];
+var districts = [
+    'D03'  //
+    ,'D04' //
+    ,'D05' //
+    ,'D06' //
+    ,'D07' //
+    ,'D08' //
+    ,'D10' //
+    ,'D11' //
+    ,'D12' //
+]
 
-var pems_root = process.env.CALVAD_PEMS_ROOT ||'/data/pems/breakup/'
-var root = path.normalize(pems_root)
+// configuration stuff
+var rootdir = path.normalize(process.cwd())
+var RCall = ['--no-restore','--no-save','vds_plots.R']
+var Rhome = path.normalize(rootdir+'/R')
+var opts = {cwd: Rhome
+           ,env: process.env
+           }
 
-var statedb = 'vdsdata%2ftracking'
+var config_file = path.normalize(rootdir+'/config.json')
+var config
+var config_okay = require('config_okay')
 
-var R;
+// process command line arguments
+if(argv.config !== undefined){
+    config_file = path.normalize(rootdir+'/'+argv.config)
+}
+console.log('setting configuration file to ',config_file,'.  Change with the --config option.')
+
+
+function _configure(cb){
+    if(config === undefined){
+        config_okay(config_file,function(e,c){
+            if(e) throw new  Error(e)
+            config = c
+            if(config.calvad !== undefined){
+                // override the above hard coding stuffs
+                if(config.calvad.districts !== undefined){
+                    if(!Array.isArray(config.calvad.districts)){
+                        config.calvad.districts = [config.calvad.districts]
+                    }
+                    districts = config.calvad.districts
+                }
+                if(config.calvad.years !== undefined){
+                    if(!Array.isArray(config.calvad.years)){
+                        config.calvad.years = [config.calvad.years]
+                    }
+                    years = config.calvad.years
+                }
+            }
+            return cb(null,config)
+
+        })
+        return null
+    }else{
+        return cb(null,config)
+    }
+}
 
 
 /**
@@ -33,29 +80,26 @@ var R;
  *
  */
 
-var trigger_R_job = function(task,done){
+function trigger_R_job(task,done){
+    var R,logfile,logstream,errstream
     var file = task.file
     var did = suss_detector_id(file)
-    var opts = _.clone(task.opts)
+    var _opts = Object.assign({},task.opts)
 
-    opts.env['FILE']=file
-    opts.env['CALVAD_PEMS_ROOT']=pems_root
-    opts.env['CALVAD_FORCE_PLOT']=force_plot
-    opts.env['COUCHDB_TRACKINGDB']=statedb
+    _opts.env.FILE=file
     console.log('processing ',file)
-
-    var R  = spawn('Rscript', RCall, opts);
+    R  = spawn('Rscript', RCall, _opts)
     R.stderr.setEncoding('utf8')
     R.stdout.setEncoding('utf8')
-    var logfile = 'log/vdsplot_'+did+'_'+opts.env['RYEAR']+'.log'
-    var logstream = fs.createWriteStream(logfile
+    logfile = 'log/vdsplot_'+did+'_'+_opts.env.RYEAR+'.log'
+    logstream = fs.createWriteStream(logfile
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
-                                         ,mode: 0666 })
-    var errstream = fs.createWriteStream(logfile
+                                         ,mode: 0o666 })
+    errstream = fs.createWriteStream(logfile
                                         ,{flags: 'a'
                                          ,encoding: 'utf8'
-                                         ,mode: 0666 })
+                                         ,mode: 0o666 })
     R.stdout.pipe(logstream)
     R.stderr.pipe(errstream)
     R.on('exit',function(code){
@@ -65,111 +109,37 @@ var trigger_R_job = function(task,done){
     })
 }
 
-function vdsfile_handler(opt){
-    // this checks couchdb
-    return function(f,cb){
-        var did = suss_detector_id(f)
+_configure(function(e,r){
+    var ydq
+    if(e) throw new Error(e)
+    ydq = queue(1)
+    years.forEach(function(year){
+        districts.forEach(function(district){
+            var o = Object.assign({},opts)
+            o.env = Object.assign({},opts.env)
+            o.env.RYEAR = year
+            o.env.RDISTRICT=district
+            //o.district = district
 
-        if(check_existing){
-	    console.log({'db':statedb
-			 ,'doc':did
-			 ,'year':'_attachments'
-			 ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-			})
-            couch_check({'db':statedb
-			 ,'doc':did
-			 ,'year':'_attachments'
-			 ,'state':[did,opt.env['RYEAR'],'raw','004.png'].join('_')
-			}
-			,function(err,state){
-                            if(err) return cb(err)
-                            console.log(state)
-                            if(!state){
-				console.log('push to queue '+f)
-				trigger_R_job({'file':f
-                                               ,'opts':opt
-                                              },cb);
-                            }else{
-                                console.log('already done')
-                                cb() // move on to the next
-                            }
-                            return null
-			});
+            o.env.CALVAD_PEMS_ROOT=config.calvad.vdspath
+            o.env.R_CONFIG=config_file
+            o.calvad = Object.assign({},config.calvad)
+            o.couchdb = config.couchdb
+
+            ydq.defer(year_district_handler,o,trigger_R_job)
             return null
-	}else{
-            console.log('push to queue '+f)
-            trigger_R_job({'file':f
-                           ,'opts':opt
-                          },cb);
-	    return null
-	}
+        })
+        return null
+    })
 
-    }
-}
-
-var years = [2012]//,2011];
-
-var districts = [
-    // 'D03' // done 2012
-    // 'D04' // done 2012
-    //'D05' // done 2012
-    //,'D06' // done 2012
-    'D07' // activimetrics
-    // 'D08' // done 2012
-    ,'D10' // activimetrics
-    ,'D11' // activimetrics
-    ,'D12' // activimetrics
-]
-
-
-function year_district_handler(opt,callback){
-    // get the files, load the queue
-
-    // check if there is a plot file in couchdb
-    var handler = vdsfile_handler(opt)
-    console.log('year_district handler, getting list for district:'+ opt.env['RDISTRICT'] + ' year: '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles_local(
-        {district:opt.env['RDISTRICT']
-        ,year:opt.env['RYEAR']}
-      ,function(err,list){
-           if(err) throw new Error(err)
-           console.log('got '+list.length+' listed files.  Sending each to handler for queuing.')
-           var fileq = queue(num_CPUs);
-           list.forEach(function(f,idx){
-               console.log('queue up ',f)
-               fileq.defer(handler,f)
-               return null
-           });
-           fileq.await(function(e){
-               return callback(e)
-           })
-           return null
-       })
-}
-
-var RCall = ['--no-restore','--no-save','vds_plots.R']
-
-
-var opts = { cwd: undefined,
-             env: process.env
-           }
-var ydq = queue(1);
-years.forEach(function(year){
-    districts.forEach(function(district){
-        var o = _.clone(opts,true)
-        o.env['RYEAR'] = year
-        o.env['RDISTRICT']=district
-        ydq.defer(year_district_handler,o)
+    ydq.await(function(){
+        // finished loading up all of the files into the file_queue, so
+        // set the await on that
+        console.log('ydq has drained')
         return null
     })
     return null
+
 })
 
-ydq.await(function(){
-    // finished loading up all of the files into the file_queue, so
-    // set the await on that
-    console.log('ydq has drained')
-    return null
-})
-
-1;
+1

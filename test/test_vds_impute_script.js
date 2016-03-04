@@ -1,53 +1,65 @@
-var should = require('should')
-var vds_files = require('../lib/vds_files.js')
-var config = {}
-var spawn = require('child_process').spawn;
+/*eslint-env node, mocha */
+
+
+var spawn = require('child_process').spawn
 var fs = require('fs')
 
-var year_district_handler = require('../lib/ydh')
+var queue = require('d3-queue').queue
 
-var year = 2012
-var queue = require('queue-async')
+var logfile = 'log/testvdsimpute.log'
 
-var path = require('path')
+// not using config here, so comment out.  look at trigger_plot test
+// for an example of how to set some specific variables and mock up a
+// dummy config by writing out the config to a temp file then deleting
+// it
+//
+//
+//var path = require('path')
+//var rootdir = path.normalize(process.cwd())
+// var config_file = rootdir+'/test.config.json'
+// var config_okay = require('config_okay')
+// var config = {}
+require('should')
 
-var rootdir = path.normalize(process.cwd())
-var config_file = rootdir+'/test.config.json'
-var config_okay = require('config_okay')
-before(function(done){
-    var district = 'files' // fake out the finder
+// before(function(done){
+//     config_okay(config_file,function(err,c){
+//         if(err){
+//             throw new Error('node.js needs a good croak module')
+//         }
+//         config = c
+//         return done()
+//     })
+//     return null
+// })
 
-    config_okay(config_file,function(err,c){
-        if(err){
-            throw new Error('node.js needs a good croak module')
-        }
-        config = c
-        config.district = district // fake out the get_local_files.js
+after(function(done){
+    var q = queue()
+    q.defer(fs.unlink,logfile)
+    q.defer(fs.unlink,'./tests/testthat/evenmorefiles/D10/5/N/LOUISE_AVE/1007610_ML_2012.120.imputed.RData')
+    //q.defer(fs.unlink,'./log/vdsimpute_1122682_2012.log')
+    //q.defer(fs.unlink,'./log/vdsimpute_322682_2012.log')
+    q.await(function(e,r){
         return done()
     })
-    return null
 })
 
 
-
-describe('trigger_vds_impute',function(){
-
+describe('trigger_vds_impute, a slow test that takes 5 minutes',function(){
     it('should trigger the function, search 4 files, process 2 files',
        function(done){
+           var logstream,errstream
            var commandline = ['trigger_vds_impute.js','--config','test.config.json']
-           var job  = spawn('node', commandline);
-
+           var job  = spawn('node', commandline)
            job.stderr.setEncoding('utf8')
            job.stdout.setEncoding('utf8')
-           var logfile = 'log/testvdsimpute.log'
-           var logstream = fs.createWriteStream(logfile
-                                                ,{flags: 'a'
-                                                  ,encoding: 'utf8'
-                                                  ,mode: 0666 })
-           var errstream = fs.createWriteStream(logfile
-                                                ,{flags: 'a'
-                                                  ,encoding: 'utf8'
-                                                  ,mode: 0666 })
+           logstream = fs.createWriteStream(logfile
+                                            ,{flags: 'a'
+                                              ,encoding: 'utf8'
+                                              ,mode: 0o666 })
+           errstream = fs.createWriteStream(logfile
+                                            ,{flags: 'a'
+                                              ,encoding: 'utf8'
+                                              ,mode: 0o666 })
            job.stdout.pipe(logstream)
            job.stderr.pipe(errstream)
 
@@ -58,20 +70,14 @@ describe('trigger_vds_impute',function(){
                    // work through each line, parse the output
                    var lines = data.split(/\r?\n/)
                    var tested = {}
-                   var queued = {}
                    var processed = {}
                    var t_match = new RegExp('^test\\s+(.*).txt.xz')
-                   var q_match = new RegExp('^queue up\\s+(.*).txt.xz')
                    var p_match = new RegExp('^processing\\s+(.*).txt.xz')
                    lines.forEach(function(line){
                        var t = t_match.exec(line)
-                       var q = q_match.exec(line)
                        var p = p_match.exec(line)
                        if(t && t[1]){
                            tested[t[1]] = 1
-                       }
-                       if(q && q[1]){
-                           queued[q[1]] = 1
                        }
                        if(p && p[1]){
                            processed[p[1]] = 1
@@ -81,15 +87,13 @@ describe('trigger_vds_impute',function(){
                        '322682_ML_2012': 1,
                        '411682_ML_2012': 1,
                        '1011682_ML_2012': 1,
-                       '1122682_ML_2012': 1
-                   })
-                   queued.should.eql({
-                       '322682_ML_2012':1,
-                       '1122682_ML_2012':1
+                       '1122682_ML_2012': 1,
+                       '5/N/LOUISE_AVE/1007610_ML_2012':1
                    })
                    processed.should.eql({
                        '322682_ML_2012':1,
-                       '1122682_ML_2012':1
+                       '1122682_ML_2012':1,
+                       '5/N/LOUISE_AVE/1007610_ML_2012':1
                    })
                    return done()
                })

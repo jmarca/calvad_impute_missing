@@ -13,15 +13,16 @@
   "parser": "babel-eslint",
 
   "rules": {
+    "no-console":[0],
     "array-callback-return":[2],
-    "quotes": [2, "single", "avoid-escape"],
+    "quotes": [0],
     "brace-style": [2, "1tbs", { "allowSingleLine": false }],
     "linebreak-style": [2, "unix"],
     "semi": [2, "never"],
     "strict": [2, "global"],
     "comma-dangle": [2, "never"],
     "eol-last": 2,
-    "dot-notation": 0,
+    "dot-notation": 2,
     "dot-location": [2, "property"],
     "consistent-return": 2,
     "no-unused-vars": [2, {"args": "none"}],

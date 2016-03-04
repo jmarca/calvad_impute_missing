@@ -19,7 +19,7 @@
     "lodash": "",
     "minimist": "^1.2.0",
     "pg": "",
-    "queue-async": "",
+    "d3-queue": "",
     "rstats_couch_utils": "jmarca/rstats_couch_utils",
     "rstats_remote_files": "jmarca/rstats_remote_files",
     "superagent": "",
@@ -29,18 +29,16 @@
     "babel-eslint": "^5.0.0",
     "eslint": "^2.2.0",
     "eslint-plugin-babel": "^3.1.0",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2",
-    "gulp-eslint": "^2.0.0",
-    "gulp-istanbul": "^0.10.3",
-    "gulp-jsdoc3": "^0.2.0",
-    "gulp-mocha": "^2.2.0",
-    "gulp-sourcemaps": "^1.6.0",
+    "ink-docstrap": "^1.1.4",
+    "istanbul": "^0.4.2",
+    "jsdoc": "^3.4.0",
     "mocha": "",
     "should": ""
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha ./test/test_* -R list --timeout 240000",
+    "test-travis": "istanbul cover ./node_modules/.bin/_mocha -- -R spec --check-leaks --timeout 50000 ./test/test_checkRdata ./test/test_ydh_impute_more.js  ./test/test_ydh_plots.js  ./test/test_year_district_handler.js",
+    "jsdoc": "jsdoc -c .jsdoc.json"
   },
   "repository": {
     "type": "git",

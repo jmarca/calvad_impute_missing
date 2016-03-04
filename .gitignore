@@ -12,3 +12,6 @@
 **/config.json
 .tern-port
 log/*.log
+tests/testthat/evenmorefiles/D08/91/E/SERFAS_CLUB/images/
+coverage
+doc
