@@ -6,7 +6,7 @@ var config = {}
 var year_district_handler = require('../lib/ydh_imputations.js')
 
 var year = 2012
-var base_vdspath = './tests/testthat/'
+var base_vdspath = './tests/testthat/evenmorefiles'
 var queue = require('d3-queue').queue
 
 
@@ -54,9 +54,8 @@ describe('year district handler should work',function(){
        function(done){
            var filecount = 0
            var q = queue(1)
-           var districts = ['evenmorefiles']
-           var seen = {'files':0
-                       ,'morefiles':0}
+           var districts = ['D01','D03','D04','D06','D08','D09','D11']
+           var seen = {}
            var fake_R_call = function(Ropts,cb){
                filecount++
                console.log('R is processing ',Ropts.file)
@@ -84,12 +83,16 @@ describe('year district handler should work',function(){
                should.not.exist(e)
                should.exist(r)
                seen.should.eql(
-                   {'files':0
-                    ,'evenmorefiles':1
-                    ,'morefiles':0
+                   {"D01": 1
+                    ,"D03": 1
+                    ,"D04": 1
+                    ,"D06": 1
+                    ,"D08": 1
+                    ,"D09": 1
+                    ,"D11": 1
                    }
                )
-               filecount.should.eql(10)
+               filecount.should.eql(8)
                return done()
            })
            return null
