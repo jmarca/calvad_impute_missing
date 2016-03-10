@@ -76,7 +76,16 @@ before(function(done){
     return null
 })
 
+function unlink(f,cb){
+    f = path.normalize(process.cwd()+'/'+f)
+    //console.log('unlink ',f)
 
+    fs.unlink(f,function(e,r){
+        if(e) console.log(e)
+        return cb(e)
+    })
+    return null
+}
 after(function(done){
     var q = queue()
     console.log('cleaning after test_wim_impute...dropping temp databases')
@@ -84,14 +93,12 @@ after(function(done){
 
     q.defer(utils.delete_tempdb,{options:config},config.couchdb.testdb)
 
-    //q.defer(utils.demo_db_after(config))
-    q.defer(fs.unlink,logfile)
-    q.defer(function(cb){
-        fs.unlink(config_file_2,cb)
-        return null
-    })
-    //q.defer(fs.unlink,'./log/wimimpute_..._2012.log')
-    q.await(function(e,r){
+    q.defer(unlink,logfile)
+    q.defer(unlink,config_file_2)
+    q.defer(unlink,'log/wimimpute_80_2012.log')
+    q.defer(unlink,'log/wimimpute_83_2012.log')
+    q.defer(unlink,'log/wimimpute_87_2012.log')
+    q.awaitAll(function(e,r){
         return done()
     })
 })
@@ -133,6 +140,7 @@ describe('trigger_wim_impute, a slow test that takes 5 minutes',function(){
                        })
                        pushed.should.eql({
                            '80':1,
+                           '83':1,
                            '87':1
                        })
                        return cb()

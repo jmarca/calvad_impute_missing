@@ -1,0 +1,108 @@
+{
+  "_id" : "wim.83.W",
+  "_rev" : "273-95b81ecc3254dcfafec86e627a4fc955",
+  "2007" : {
+    "imputed" : "finished",
+    "csv_parse_2cdb" : {
+      "75774089d7d27bc2907dd1f0e389b7e0" : {
+        "records" : 35040,
+        "file" : "./imputed/wim.83.W.truck.imputed.2007.csv"
+      }
+    },
+    "paired" : 717690,
+    "extract_to_csv" : "finished",
+    "max_iterations" : 0,
+    "merged" : 717690,
+    "chain_lengths" : [
+      5,
+      5,
+      4,
+      4,
+      4
+    ]
+  },
+  "2008" : {
+    "imputed" : "finished",
+    "paired" : 717690,
+    "csv_parse_2cdb" : {
+      "adea25594753dd70a2a9b9f25bbcd427" : {
+        "records" : 35136,
+        "file" : "./imputed/wim.83.W.truck.imputed.2008.csv"
+      }
+    },
+    "extract_to_csv" : "finished",
+    "max_iterations" : 0,
+    "merged" : 717690,
+    "chain_lengths" : [
+      23,
+      23,
+      21,
+      23,
+      23
+    ]
+  },
+  "2009" : {
+    "imputed" : "finished",
+    "csv_parse_2cdb" : {
+      "14bb73d45819474bb13c4d41ea4d6cd3" : {
+        "records" : 35040,
+        "file" : "./imputed/wim.83.W.truck.imputed.2009.csv"
+      }
+    },
+    "paired" : 717690,
+    "extract_to_csv" : "finished",
+    "max_iterations" : 0,
+    "merged" : 717690,
+    "chain_lengths" : [
+      86,
+      80,
+      98,
+      97,
+      92
+    ]
+  },
+  "2010" : {
+    "imputed" : "finished",
+    "paired" : [
+      717690,
+      772950,
+      772960
+    ],
+    "merged" : [
+      717690,
+      772950
+    ]
+  },
+  "2011" : {
+    "imputed" : "finished"
+  },
+  "2012" : {
+  },
+  "properties" : {
+    "2009-02-25" : {
+      "loc" : "GLENDORA (WB)",
+      "wim_type" : "Data",
+      "cal_pm" : "R42.6",
+      "cal_pm_numeric" : 42.600000000000001,
+      "latitude" : 34.116999999999997,
+      "longitude" : -117.86,
+      "freeway" : 210,
+      "geojson" : {
+        "type" : "Point",
+        "crs" : {
+          "type" : "name",
+          "properties" : {
+            "name" : "EPSG:4326"
+          }
+        },
+        "coordinates" : [
+          -117.86,
+          34.116999999999997
+        ]
+      },
+      "lanes" : 4,
+      "county" : "037",
+      "abs_pm" : 42.893999999999998
+    }
+  }
+}

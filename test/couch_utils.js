@@ -17,32 +17,27 @@ function put_wim_views(config,db,cb){
 function delete_pgdb(config,db,delete_pgdb_cb){
     var host = config.postgresql.host || '127.0.0.1'
     var port = config.postgresql.port || 5432
-    var admindb = config.postgresql.admin.db || 'postgres'
-    var adminuser = config.postgresql.admin.user || 'postgres'
+    var adminuser =  'postgres'
+    if(config.postgresql.admin !== undefined){
+        if(config.postgresql.admin.user !== undefined){
+            adminuser = config.postgresql.admin.user
+        }
+    }
 
-    var admin_conn_string = "postgres://"+adminuser+"@"+host+":"+port+"/"+admindb
-    pg.connect(admin_conn_string,function(err,client,clientdone){
-        var query = "drop database "+db
-            client.query(query,function(e,r){
-                if(e){
-                    console.log('failed: '+query)
-                    console.log( {
-                        'host_psql':host,
-                        'port_psql':port,
-                        'dbname_psql':db,
-                        'admin database':admindb,
-                        'admin user':adminuser
-                    } )
+    var commandline = ["/usr/bin/dropdb",
+                       "-U", adminuser,
+                       "-h", host,
+                       "-p", port
+                       , db
+                      ].join(' ');
+    exec(commandline
+         ,function(e,out,err){
+             if(e !== null ){
+                 throw new Error(e)
 
-                    throw new Error(e)
-                }
-                clientdone()
-                // database successfully created
-
-                return delete_pgdb_cb()
-            })
-        return null
-    })
+             }
+             return delete_pgdb_cb()
+         })
     return null
 }
 
@@ -196,6 +191,26 @@ function create_pgdb(config,db,create_pgdb_cb){
                            "-U", user,
                            "-h", host,
                            "-p", port,
+                           "-c", '"\\\copy wim_data from \''+process.cwd()+'/test/sql/some_more_wim_data.dump\' with (format binary);"'].join(' ');
+        console.log(commandline)
+        exec(commandline
+             ,function(e,out,err){
+                 console.log('done copying')
+                 if(e !== null ){
+                     throw new Error(e)
+
+                 }
+                 return cb()
+             })
+        return null
+    })
+
+    q.defer(function(cb){
+        var commandline = ["/usr/bin/psql",
+                           "-d", db,
+                           "-U", user,
+                           "-h", host,
+                           "-p", port,
                            "-c", '"\\\copy wim.summaries_5min_speed from \''+process.cwd()+'/test/sql/some_wim_summaries_5min_speed.dump\' with (format binary);"'].join(' ');
         console.log(commandline)
         exec(commandline
@@ -293,6 +308,7 @@ function load_wim(task,cb){
     var db_files = ['./files/wim.10.N.json'  //done impute, with png files
                     ,'./files/wim.80.W.json' //not done impute, without png files, no data in db
                     ,'./files/wim.87.S.json' //not done impute, without png files
+                    ,'./files/wim.83.W.json' //not done impute, without png files
                    ]
     var cdb = [task.options.couchdb.host+':'+task.options.couchdb.port
               ,task.options.couchdb.testdb].join('/')
@@ -312,7 +328,7 @@ function load_wim(task,cb){
                 should.exist(r)
                 r.should.have.property('text')
                 superagent_sucks = JSON.parse(r.text)
-                superagent_sucks.should.have.property('doc_count',4)
+                superagent_sucks.should.have.property('doc_count',5)
                 return cb()
 
             })
