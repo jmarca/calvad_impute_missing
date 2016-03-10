@@ -1,0 +1,107 @@
+{
+  "_id" : "wim.87.S",
+  "_rev" : "286-667e700341050e7376b0bab2f078c061",
+  "2007" : {
+    "imputed" : "finished",
+    "csv_parse_2cdb" : {
+      "427e0a0634ac7eb1f933afdcaefde4db" : {
+        "records" : 35040,
+        "file" : "./imputed/wim.87.S.truck.imputed.2007.csv"
+      }
+    },
+    "paired" : 1114500,
+    "extract_to_csv" : "finished",
+    "max_iterations" : 0,
+    "merged" : 1114500,
+    "chain_lengths" : [
+      4,
+      4,
+      5,
+      5,
+      4
+    ]
+  },
+  "2008" : {
+    "imputed" : "finished",
+    "paired" : 1114500,
+    "csv_parse_2cdb" : {
+      "b52d00296fdfbe6a8c6d0f4d788784eb" : {
+        "records" : 35136,
+        "file" : "./imputed/wim.87.S.truck.imputed.2008.csv"
+      }
+    },
+    "extract_to_csv" : "finished",
+    "max_iterations" : 0,
+    "merged" : 1114500,
+    "chain_lengths" : [
+      5,
+      5,
+      5,
+      5,
+      5
+    ]
+  },
+  "2009" : {
+    "paired" : 1114500,
+    "max_iterations" : 0,
+    "imputed" : "finished",
+    "csv_parse_2cdb" : {
+      "93a829af43194da5b0f5209b71f80ed2" : {
+        "records" : 14496,
+        "file" : "./imputed/wim.87.S.truck.imputed.2009.csv"
+      }
+    },
+    "extract_to_csv" : "finished",
+    "badpair" : 1114500,
+    "merged" : 1114500,
+    "chain_lengths" : [
+      8,
+      9,
+      8,
+      8,
+      8
+    ]
+  },
+  "2010" : {
+    "imputed" : "finished",
+    "paired" : [
+      1114500,
+      1100600,
+      1115800
+    ],
+    "merged" : 1115800
+  },
+  "2011" : {
+    "imputed" : "finished"
+  },
+  "2012" : {
+  },
+  "properties" : {
+    "2009-02-25" : {
+      "loc" : "BALBOA (SB)",
+      "wim_type" : "Data",
+      "cal_pm" : "R10.9",
+      "cal_pm_numeric" : 10.9,
+      "latitude" : 32.845999999999997,
+      "longitude" : -117.12,
+      "freeway" : 15,
+      "geojson" : {
+        "type" : "Point",
+        "crs" : {
+          "type" : "name",
+          "properties" : {
+            "name" : "EPSG:4326"
+          }
+        },
+        "coordinates" : [
+          -117.12,
+          32.845999999999997
+        ]
+      },
+      "lanes" : 4,
+      "county" : "073",
+      "multiline" : true,
+      "abs_pm" : 11.074999999999999
+    }
+  }
+}

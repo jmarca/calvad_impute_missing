@@ -31,7 +31,7 @@ before(function(done){
         config.couchdb=Object.assign({},c.couchdb)
         config.couchdb.testdb='test%2f'+test_db_unique
         config.couchdb.trackingdb = config.couchdb.testdb
-        qb = queue()
+        qb = queue(1)
         qb.defer(utils.demo_db_before(config))
         qb.defer(function(cb){
             // dump a temporary config file

@@ -74,12 +74,12 @@ if( '' != impute && impute==0){
     impute <- TRUE
 }
 force.plot <- as.numeric(Sys.getenv(c('WIM_FORCE_PLOT'))[1])
-print(force.plot)
 if( !is.na(force.plot) && ('' != force.plot || force.plot==0)){
     force.plot <- FALSE
 }else{
     force.plot <- TRUE
 }
+print(force.plot)
 
 
 trackingdb <- config$couchdb$trackingdb

@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^5.0.0",
+    "couchdb_put_view": "github:jmarca/couchdb_put_view",
     "eslint": "^2.2.0",
     "eslint-plugin-babel": "^3.1.0",
     "ink-docstrap": "^1.1.4",
@@ -37,8 +38,8 @@
   },
   "scripts": {
     "test": "mocha ./test/test_* -R list --timeout 240000",
-      "test-travis": "istanbul cover ./node_modules/.bin/_mocha -- -R spec --check-leaks --timeout 50000 ./test/test_check_RData.js ./test/test_ydh_impute_more.js  ./test/test_ydh_plots.js  ./test/test_year_district_handler.js",
-      "jsdoc": "jsdoc -c .jsdoc.json"
+    "test-travis": "istanbul cover ./node_modules/.bin/_mocha -- -R spec --check-leaks --timeout 50000 ./test/test_check_RData.js ./test/test_ydh_impute_more.js  ./test/test_ydh_plots.js  ./test/test_year_district_handler.js",
+    "jsdoc": "jsdoc -c .jsdoc.json"
   },
   "repository": {
     "type": "git",
