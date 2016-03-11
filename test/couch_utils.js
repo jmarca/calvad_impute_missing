@@ -30,6 +30,8 @@ function delete_pgdb(config,db,delete_pgdb_cb){
                        "-p", port
                        , db
                       ].join(' ');
+    console.log('deleting pgsql db ',db)
+
     exec(commandline
          ,function(e,out,err){
              if(e !== null ){

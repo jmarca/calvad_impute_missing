@@ -16,7 +16,7 @@ var config = {}
 var config_file = rootdir+'/test.config.json'
 var config_file_2 = 'wim.test.config.json'
 var config_okay = require('config_okay')
-
+var remove_images = require('./remove_images')
 
 var should = require('should')
 
@@ -39,7 +39,6 @@ before(function(done){
         config.couchdb.trackingdb = config.couchdb.testdb
         config.couchdb.db = config.couchdb.testdb
         config.postgresql.db=test_pg_db_unique
-        console.log(config)
         q = queue(3) // parallel jobs
         q.defer(function(cb){
             // job 1 is couchdb
@@ -76,16 +75,7 @@ before(function(done){
     return null
 })
 
-function unlink(f,cb){
-    f = path.normalize(process.cwd()+'/'+f)
-    //console.log('unlink ',f)
 
-    fs.unlink(f,function(e,r){
-        if(e) console.log(e)
-        return cb(e)
-    })
-    return null
-}
 after(function(done){
     var q = queue()
     console.log('cleaning after test_wim_impute...dropping temp databases')
@@ -93,18 +83,22 @@ after(function(done){
 
     q.defer(utils.delete_tempdb,{options:config},config.couchdb.testdb)
 
-    q.defer(unlink,logfile)
-    q.defer(unlink,config_file_2)
-    q.defer(unlink,'log/wimimpute_80_2012.log')
-    q.defer(unlink,'log/wimimpute_83_2012.log')
-    q.defer(unlink,'log/wimimpute_87_2012.log')
+    q.defer(fs.unlink,path.normalize(process.cwd()+'/'+logfile))
+    q.defer(fs.unlink,path.normalize(process.cwd()+'/'+config_file_2))
+    q.defer(remove_images,'87','S',2012,config.calvad.wimpath)
+    q.defer(fs.unlink,
+            path.normalize(process.cwd()+'/'+'log/wimimpute_80_2012.log'))
+    q.defer(fs.unlink,
+            path.normalize(process.cwd()+'/'+'log/wimimpute_83_2012.log'))
+    q.defer(fs.unlink,
+            path.normalize(process.cwd()+'/'+'log/wimimpute_87_2012.log'))
     q.awaitAll(function(e,r){
         return done()
     })
 })
 
 
-describe('trigger_wim_impute, a slow test that takes 5 minutes',function(){
+describe('trigger_wim_impute, a slow test that takes 1 to 2 minutes',function(){
     it('should trigger the function',
        function(done){
            var logstream,errstream
