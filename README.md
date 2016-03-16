@@ -350,3 +350,11 @@ The test.config.json should have the following bit at the end
 ```
 
 This will allow the trigger_vds_impute.js test to run properly.
+
+
+## WIM imputation
+
+WIM data imputation requires that the WIM raw data be processed into
+CSV and summary reports and then loaded into the postgresql database.
+Further, it also requires that the status spreadsheets be processed
+and loaded into the database.

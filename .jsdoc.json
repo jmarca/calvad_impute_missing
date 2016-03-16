@@ -1,6 +1,6 @@
 {
     "source": {
-        "include": [ "./trigger_vds_impute.js","./trigger_vds_plot.js","./trigger_wim_impute.js","./trigger_wim_plot.js","./lib"],
+        "include": [ "./index.js","./lib"],
         "includePattern": ".+\\.js(doc)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
@@ -10,6 +10,6 @@
         "recurse": true,                  // same as -r
         "template":"./node_modules/ink-docstrap/template",
         "package":"package.json",
-        "readme": "README.md" // same as -u path/to/tutorials
+        "readme": "README.md"
     }
 }
