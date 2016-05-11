@@ -23,7 +23,6 @@ check.wim.with.plots <- function(df,wim.site,direction,year,trackingdb,wim.path)
                                  ,wim.path=wim.path)
 
     config <- rcouchutils::get.config()
-    sqldf_postgresql(config)
 
     ##df.ts <- max.check(df)
     df.ts <- good.high.clustering(df)
@@ -41,6 +40,13 @@ check.wim.with.plots <- function(df,wim.site,direction,year,trackingdb,wim.path)
     return( c(attach.files,attach.files2))
 
 }
+
+## need to call this.  if running under test, you might want to
+## manually fix host to localhost, and name the db something on your
+## localhost postgresql instance.  Otherwise you'll pay for round trip
+## to and from your db server.  if the db server *is* on the same
+## machine as this script, then no need to adjust
+sqldf_postgresql(config)
 
 reassess <- function(wim.site,year,con,
                      wim.path='/data/backup/wim',
