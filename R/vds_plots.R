@@ -71,7 +71,9 @@ if('' == force.plot || force.plot==0 || force.plot == 'false'){
 db <- config$couchdb$trackingdb
 
 result <- calvadrscripts::plot_raw.data(
-    fname,thefile,path,year,vds.id
+    fname,
+    file,
+    path,year,vds.id
    ,remote=FALSE
    ,force.plot=force.plot
    ,trackingdb=db)
