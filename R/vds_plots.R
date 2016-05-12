@@ -70,6 +70,12 @@ if('' == force.plot || force.plot==0 || force.plot == 'false'){
 }
 db <- config$couchdb$trackingdb
 
+result <- calvadrscripts::plot_raw.data(
+    fname,thefile,path,year,vds.id
+   ,remote=FALSE
+   ,force.plot=force.plot
+   ,trackingdb=db)
+
 result <- calvadrscripts::get.and.plot.vds.amelia(
     pair=vds.id,
     year=year,
@@ -78,12 +84,6 @@ result <- calvadrscripts::get.and.plot.vds.amelia(
     path=path,
     force.plot=force.plot,
     trackingdb=db)
-
-result <- calvadrscripts::plot_raw.data(
-    fname,thefile,path,year,vds.id
-   ,remote=FALSE
-   ,force.plot=force.plot
-   ,trackingdb=db)
 
 
 quit(save='no',status=10)
