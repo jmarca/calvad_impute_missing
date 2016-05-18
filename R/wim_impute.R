@@ -1,5 +1,5 @@
 ## need node_modules directories
-devtools::wd('..')
+setwd('..')
 dot_is <- getwd()
 node_paths <- dir(dot_is,pattern='\\.Rlibs',
                   full.names=TRUE,recursive=TRUE,
