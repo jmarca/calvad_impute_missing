@@ -43,6 +43,7 @@ if(argv.config !== undefined){
 }
 console.log('setting configuration file to ',config_file,'.  Change with the --config option.')
 
+if(argv.rdata){ opts.rdata=true }
 
 function _configure(cb){
     if(config === undefined){
