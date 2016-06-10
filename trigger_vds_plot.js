@@ -10,6 +10,9 @@ var argv = require('minimist')(process.argv.slice(2))
 
 var year_district_handler = require('./lib/ydh_plots.js')
 
+var redo_plots = process.env.CALVAD_REDO_PLOTS
+
+
 var years = [2012]//,2011];
 var districts = [
     'D03'  //
@@ -61,6 +64,9 @@ function _configure(cb){
                         config.calvad.years = [config.calvad.years]
                     }
                     years = config.calvad.years
+                }
+                if(config.calvad.redo_plots !== undefined){
+                    redo_plots= config.calvad.redo_plots
                 }
             }
             return cb(null,config)
@@ -127,7 +133,7 @@ _configure(function(e,r){
             o.calvad = Object.assign({},config.calvad)
             o.couchdb = config.couchdb
 
-            ydq.defer(year_district_handler,o,trigger_R_job)
+            ydq.defer(year_district_handler,o,trigger_R_job,redo_plots)
             return null
         })
         return null
