@@ -104,9 +104,10 @@ function _configure(cb){
                 if(config.calvad.wim_redo !== undefined){
                     doover =config.calvad.wim_redo
                 }
-                opts.env.WIM_PLOT_PRE  =config.calvad.wim_plot_pre || 1
-                opts.env.WIM_PLOT_POST =config.calvad.wim_plot_post || 1
-                opts.env.WIM_IMPUTE    =config.calvad.wim_impute || 1
+
+                opts.env.WIM_PLOT_PRE  =config.calvad.wim_plot_pre  !== undefined ? config.calvad.wim_plot_pre  : 1
+                opts.env.WIM_PLOT_POST =config.calvad.wim_plot_post !== undefined ? config.calvad.wim_plot_post : 1
+                opts.env.WIM_IMPUTE    =config.calvad.wim_impute    !== undefined ? config.calvad.wim_impute    : 1
                 opts.env.WIM_FORCE_PLOT=config.calvad.wim_force_plot
                 opts.env.WIM_PATH      =config.calvad.wimpath
 
