@@ -10,7 +10,7 @@ var argv = require('minimist')(process.argv.slice(2))
 
 var wimpath = process.env.WIM_PATH
 
-var num_CPUs = require('os').cpus().length;
+var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length
 // num_CPUs=1 // while testing
 
 var statedb = 'vdsdata%2ftracking'
