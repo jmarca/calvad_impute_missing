@@ -6,9 +6,30 @@ var fs = require('fs');
 var queue = require('d3-queue').queue
 
 var _ = require('lodash');
-var get_files = require('./lib/get_files')
+//var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
-var couch_check = require('couch_check_state')
+var year_handler = require('./lib/wim_yh_plots.js')
+
+var redo_plot = process.env.CALVAD_REDO_PLOT
+var argv = require('minimist')(process.argv.slice(2))
+var years = []
+
+// configuration stuff
+var rootdir = path.normalize(process.cwd())
+var RCall = ['--no-restore','--no-save','wim_impute.R']
+var Rhome = path.normalize(rootdir+'/R')
+var opts = {cwd: Rhome
+           ,env: process.env
+           }
+var config_file = path.normalize(rootdir+'/config.json')
+var config
+var config_okay = require('config_okay')
+
+var wim_sites = require('calvad_wim_sites')
+var unique_wim = {}
+
+
+
 
 
 var wimpath = process.env.WIM_PATH
@@ -72,20 +93,6 @@ var file_queue_drain =function(){
     return null
 }
 
-var years = [2012]//,2010,2011];
-
-var RCall = ['--no-restore','--no-save','wim_impute.R']
-
-var wim_sites = require('calvad_wim_sites')
-
-var unique_wim = {}
-var opts = { cwd: undefined,
-             env: process.env
-           }
-
-var rootdir = path.normalize(__dirname)
-var config_file = rootdir+'/config.json'
-var config={}
 var sites = wim_sites.sites
 years.forEach(function(year){
     sites.forEach(function(site){
