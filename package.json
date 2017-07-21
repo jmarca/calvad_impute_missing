@@ -39,6 +39,7 @@
   "scripts": {
     "test": "mocha ./test/test_* -R list --timeout 240000",
     "test-travis": "istanbul cover ./node_modules/.bin/_mocha -- -R spec --check-leaks --timeout 50000 ./test/test_check_RData.js ./test/test_ydh_impute_more.js  ./test/test_ydh_plots.js  ./test/test_year_district_handler.js",
+    "preinstall": "Rscript RinstallDeps.R",
     "jsdoc": "jsdoc -c .jsdoc.json"
   },
   "repository": {
