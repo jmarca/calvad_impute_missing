@@ -20,7 +20,11 @@ if(!file.exists(path)){
 lib_paths <- .libPaths()
 .libPaths(c(path,node_paths,lib_paths))
 
-install.packages("roxygen2",repos="https://cloud.r-project.org")
-install.packages("devtools",repos="https://cloud.r-project.org")
-##devtools::install_github("hadley/devtools")
+if(length(find.package("roxygen2",quiet=TRUE)) == 0){
+    install.packages("roxygen2",repos="https://cloud.r-project.org",lib=path)
+}
+if(length(find.package("devtools",quiet=TRUE)) == 0){
+    install.packages("devtools",repos="https://cloud.r-project.org",lib=path)
+}
+devtools::install_github("hadley/devtools")
 devtools::install_deps()
