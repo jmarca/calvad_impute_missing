@@ -7,7 +7,6 @@
     "test": "tests"
   },
   "dependencies": {
-    "async": "",
     "calvad_rscripts": "jmarca/calvad_rscripts",
     "calvad_vds_sites": "jmarca/calvad_vds_sites",
     "calvad_wim_sites": "jmarca/calvad_wim_sites",

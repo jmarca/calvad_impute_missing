@@ -3,7 +3,7 @@ var util  = require('util'),
     spawn = require('child_process').spawn;
 var path = require('path');
 var fs = require('fs');
-var async = require('async');
+var queue = require('d3-queue').queue
 var _ = require('lodash');
 var get_files = require('./lib/get_files')
 var suss_detector_id = require('suss_detector_id')
@@ -46,32 +46,53 @@ var districts = ['D04'
                 ,'D10'
                 ]
 
-var years_districts = []
-_.each(years,function(year){
-    _.each(districts,function(district){
-        var o = { env: {} }
-        o.env['RYEAR'] = year
-        o.env['RDISTRICT']=district
-        years_districts.push(o)
-    })
-});
-
-// debugging, just do one combo for now
-// years_districts=[years_districts[0]]
-async.eachLimit(years_districts,1,function(opt,cb){
+function ydq_processor(opt,cb){
     // get the files
     var handler = vdsfile_handler(opt)
     console.log('getting '+ opt.env['RDISTRICT'] + ' '+opt.env['RYEAR'])
-    get_files.get_yearly_vdsfiles_local({district:opt.env['RDISTRICT']
-                                        ,year:opt.env['RYEAR']}
-                                       ,function(err,list){
-                                            if(err) throw new Error(err)
-                                            async.eachLimit(list
-                                                           ,5
-                                                           ,handler
-                                                           ,cb);
-                                            return null
-                                        });
+    get_files.get_yearly_vdsfiles_local(
+        {district:opt.env['RDISTRICT']
+         ,year:opt.env['RYEAR']}
+        ,function(err,list){
+            if(err) throw new Error(err)
+            var vdsfileq = queue(5)
+            list.forEach(function(file){
+                vdsfileq.defer(handler,
+                               file)
+                return null
+            })
+            vdsfileq.await(function(e,r){
+                // done
+                return cb(e)
+            })
+        })
+}
+
+var ydq = queue(1)
+var years_districts = []
+years.forEach(function(year){
+    districts.forEach(function(district){
+        var o = { env: {} }
+        o.env['RYEAR'] = year
+        o.env['RDISTRICT']=district
+        ydq.defer(ydq_processor,o)
+        return null
+    })
+    ydq.awaitAll(function(e,r){
+        // done
+        console.log('done with year, district processing')
+        if(e) console.log('error',e)
+        return null
+    })
+    return null
+});
+
+
+
+// debugging, just do one combo for now
+// years_districts=[years_districts[0]]
+years_districts.forEach(function(yd
+async.eachLimit(years_districts,1,
 });
 
 1;
