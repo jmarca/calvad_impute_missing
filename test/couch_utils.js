@@ -2,6 +2,8 @@
 var superagent = require('superagent')
 var queue = require('d3-queue').queue
 var exec = require('child_process').exec
+var get_pool = require('psql_pooler').get_pool
+
 var pg = require('pg')
 var putview = require('couchdb_put_view')
 var should = require('should')
@@ -75,6 +77,8 @@ function create_pgdb(config,db,create_pgdb_cb){
 
     // create the testing database
     q.defer(function(cb){
+        // pg connect is no longer.  need to fix this
+
         pg.connect(admin_conn_string, function(err, client,clientdone) {
             if(err) {
                 console.log( 'must have valid admin credentials in test.config.json, and a valid admin password setup in your .pgpass file' )
