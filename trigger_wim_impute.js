@@ -93,6 +93,7 @@ function _configure(cb){
             if(e) throw new  Error(e)
             opts.env.R_CONFIG=config_file
             config = c
+            opts.couchdb = Object.assign({},config.couchdb)
             if(config.calvad !== undefined){
                 // override the above hard coding stuffs
                 if(config.calvad.years !== undefined){
@@ -132,8 +133,8 @@ _configure(function(e,r){
     years.forEach(function(year){
 
         var opt =Object.assign(opts,
-                               {'year':year
-                                ,'config_file':config_file})
+                               {'year':year})
+                               //,'config_file':config_file})
         //opt.couchdb = config.couchdb
         function handle_couch_query(e,r){
             var w
@@ -146,7 +147,7 @@ _configure(function(e,r){
             //          ,{ id: 'wim.26.E ', key: [ 2010, 'nothing', '26' ,'E'  ], value: null }
             //          ,{ id: 'wim.22.W ', key: [ 2010, 'nothing', '22' ,'W'  ], value: null }
             //          ]
-            console.log(e,r)
+            console.log('handle couch query',e,r)
             if(r && r.rows !== undefined && r.rows.length >0){
                 console.log("loaded r.rows of length "+r.rows.length)
             }else{
@@ -191,7 +192,9 @@ _configure(function(e,r){
             }
             return null
         }
-        //console.log(opt)
+        // console.log(opt)
+        // console.log('deferring wim_sites')
+
         yearq.defer(wim_sites,opt,handle_couch_query)
         return null
     })

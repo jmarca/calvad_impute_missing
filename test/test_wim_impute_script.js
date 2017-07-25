@@ -8,7 +8,8 @@ var queue = require('d3-queue').queue
 
 var logfile = 'log/testwimimpute.log'
 
-var utils=require('./couch_utils.js')
+var couch_utils=require('./couch_utils.js')
+var pg_utils=require('./pg_utils.js')
 
 var path = require('path')
 var rootdir = path.normalize(process.cwd())
@@ -40,20 +41,14 @@ before(function(done){
         config.couchdb.db = config.couchdb.testdb
         config.postgresql.db=test_pg_db_unique
         q = queue(3) // parallel jobs
-        q.defer(function(cb){
-            // job 1 is couchdb
-            var qb = queue(1) // sequential jobs
-            qb.defer(utils.create_tempdb,{options:config},config.couchdb.testdb)
-            qb.defer(utils.load_wim,{options:config})
-            qb.await(function(e,r1,r2){
-                console.log('couchdb sorted')
-                should.not.exist(e)
-                return cb()
-            })
-
+        q.defer(async function(cb){
+            var first = await couch_utils.create_tempdb({options:config},config.couchdb.testdb)
+            var second = await couch_utils.load_wim_async({options:config})
+            console.log('done with first','and second',second)
+            return cb()
         })
         // job 2 is pgsql
-        q.defer(utils.create_pgdb,config,config.postgresql.db)
+        q.defer(pg_utils.create_pgdb,config,config.postgresql.db)
 
         // job 3 is write out temporary config file
         q.defer(function(cb){
@@ -79,10 +74,9 @@ before(function(done){
 after(function(done){
     var q = queue()
     console.log('cleaning after test_wim_impute...dropping temp databases')
-    q.defer(utils.delete_pgdb,config,config.postgresql.db)
+    q.defer(pg_utils.delete_pgdb,config,config.postgresql.db)
 
-    q.defer(utils.delete_tempdb,{options:config},config.couchdb.testdb)
-
+    q.defer(couch_utils.delete_tempdb,{options:config},config.couchdb.testdb)
     q.defer(fs.unlink,path.normalize(process.cwd()+'/'+logfile))
     q.defer(fs.unlink,path.normalize(process.cwd()+'/'+config_file_2))
     q.defer(remove_images,'87','S',2012,config.calvad.wimpath)
@@ -92,9 +86,11 @@ after(function(done){
             path.normalize(process.cwd()+'/'+'log/wimimpute_83_2012.log'))
     q.defer(fs.unlink,
             path.normalize(process.cwd()+'/'+'log/wimimpute_87_2012.log'))
+    q.defer(fs.unlink,
+            path.normalize(process.cwd()+'/'+'log/testwimimpute.log'))
     q.awaitAll(function(e,r){
         return done()
-    })
+})
 })
 
 
@@ -103,6 +99,7 @@ describe('trigger_wim_impute, a slow test that takes 1 to 2 minutes',function(){
        function(done){
            var logstream,errstream
            var commandline = ['trigger_wim_impute.js','--config',config_file_2]
+           console.log(commandline)
            var job  = spawn('node', commandline)
            job.stderr.setEncoding('utf8')
            job.stdout.setEncoding('utf8')
@@ -119,6 +116,7 @@ describe('trigger_wim_impute, a slow test that takes 1 to 2 minutes',function(){
 
 
            job.on('exit',function(code){
+               console.log(code)
                var testq = queue()
                testq.defer(function(cb){
                    fs.readFile(logfile,{'encoding':'utf8'},function(err,data){
@@ -144,6 +142,8 @@ describe('trigger_wim_impute, a slow test that takes 1 to 2 minutes',function(){
 
                testq.defer(function(cb){
                    fs.readFile('log/wimimpute_80_2012.log',{'encoding':'utf8'},function(err,data){
+                       console.log(err)
+
                        var lines = data.split(/\r?\n/)
                        var has_problem = false
                        var problem_match = new RegExp('problem, dim df.wim is 0')
