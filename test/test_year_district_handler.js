@@ -180,6 +180,10 @@ describe('year district handler should work',function(){
                should.not.exist(e)
                should.exist(r)
                filecount.should.eql(1)
+               // can't really guarantee that d08 gets handled before d12
+               // so just sort the response r.  It should be 0 for the d12
+               // file, and 1 for the d08 file
+               r[0] = r[0].sort()
                r.should.eql([[0,1]])
                return done()
            })
