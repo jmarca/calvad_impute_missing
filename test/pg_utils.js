@@ -24,7 +24,7 @@ async function command(c,config,f){
             exec (commandc
                   ,function(e,stdout,stderr){
                       if(e){
-                          reject(e)
+                          return reject(e)
                       }
                       resolve([stdout,stderr])
                       return null

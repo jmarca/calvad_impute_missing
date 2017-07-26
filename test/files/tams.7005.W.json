@@ -1,0 +1,142 @@
+{
+    "_id": "tams.7005.W",
+    "2016": {
+        "tamsraw_chain_lengths": [
+            7,
+            6,
+            6,
+            6,
+            6
+        ],
+        "tamsraw_max_iterations": 0,
+        "imputed": "finished"
+    },
+    "_attachments": {
+        "7005_W_2016_raw_006.png": {
+            "content_type": "image/png",
+            "revpos": 23,
+            "digest": "md5-ivHedJu8eqXMqHeLB2SJNw==",
+            "length": 889156,
+            "stub": true
+        },
+        "7005_W_2016_raw_005.png": {
+            "content_type": "image/png",
+            "revpos": 22,
+            "digest": "md5-rZhLeOn+mSwokkl+w2MbzA==",
+            "length": 584494,
+            "stub": true
+        },
+        "7005_W_2016_raw_004.png": {
+            "content_type": "image/png",
+            "revpos": 21,
+            "digest": "md5-45XQ/myTr12wnq9NTVnFNg==",
+            "length": 647447,
+            "stub": true
+        },
+        "7005_W_2016_raw_003.png": {
+            "content_type": "image/png",
+            "revpos": 20,
+            "digest": "md5-mjXbSO6YLz2YpVbCQi2AiQ==",
+            "length": 348116,
+            "stub": true
+        },
+        "7005_W_2016_raw_002.png": {
+            "content_type": "image/png",
+            "revpos": 19,
+            "digest": "md5-jxc6lKl97pWKU6QNddd0fA==",
+            "length": 1058544,
+            "stub": true
+        },
+        "7005_W_2016_raw_001.png": {
+            "content_type": "image/png",
+            "revpos": 18,
+            "digest": "md5-7evwGchSfKnjCbLgnVwCIA==",
+            "length": 635272,
+            "stub": true
+        },
+        "7005_W_2017_imputed_006.png": {
+            "content_type": "image/png",
+            "revpos": 17,
+            "digest": "md5-1Sr88y2REukOxVmtEPfSaw==",
+            "length": 404633,
+            "stub": true
+        },
+        "7005_W_2017_imputed_005.png": {
+            "content_type": "image/png",
+            "revpos": 16,
+            "digest": "md5-MrN9HCU8maNyB5S8Ia523w==",
+            "length": 389874,
+            "stub": true
+        },
+        "7005_W_2017_imputed_004.png": {
+            "content_type": "image/png",
+            "revpos": 15,
+            "digest": "md5-pWE8oTOWz4Fc5CpQgldyfQ==",
+            "length": 438956,
+            "stub": true
+        },
+        "7005_W_2017_imputed_003.png": {
+            "content_type": "image/png",
+            "revpos": 14,
+            "digest": "md5-+Vy7azy5IJ5wKk17xOmYlQ==",
+            "length": 422001,
+            "stub": true
+        },
+        "7005_W_2017_imputed_002.png": {
+            "content_type": "image/png",
+            "revpos": 13,
+            "digest": "md5-mP1SWabugBlsA1aXlt8Ezg==",
+            "length": 447348,
+            "stub": true
+        },
+        "7005_W_2017_imputed_001.png": {
+            "content_type": "image/png",
+            "revpos": 12,
+            "digest": "md5-hK0mgxA7nQbeYlhAV94VZA==",
+            "length": 410549,
+            "stub": true
+        },
+        "7005_W_2017_raw_006.png": {
+            "content_type": "image/png",
+            "revpos": 7,
+            "digest": "md5-QISZ0Zzzld0fh5VQdExQmw==",
+            "length": 230906,
+            "stub": true
+        },
+        "7005_W_2017_raw_005.png": {
+            "content_type": "image/png",
+            "revpos": 6,
+            "digest": "md5-OzU6iB/lJ5WP9XR3qyfWOw==",
+            "length": 240659,
+            "stub": true
+        },
+        "7005_W_2017_raw_004.png": {
+            "content_type": "image/png",
+            "revpos": 5,
+            "digest": "md5-YsS6fQtazvzjVx35CpVRaw==",
+            "length": 246684,
+            "stub": true
+        },
+        "7005_W_2017_raw_003.png": {
+            "content_type": "image/png",
+            "revpos": 4,
+            "digest": "md5-VjM9fluAttRKMT7Ef/r93w==",
+            "length": 250916,
+            "stub": true
+        },
+        "7005_W_2017_raw_002.png": {
+            "content_type": "image/png",
+            "revpos": 3,
+            "digest": "md5-34txrSlRbLQtrRySvmYkwA==",
+            "length": 257375,
+            "stub": true
+        },
+        "7005_W_2017_raw_001.png": {
+            "content_type": "image/png",
+            "revpos": 2,
+            "digest": "md5-6spDe1A9/MHLGsVyMI/Z/Q==",
+            "length": 243755,
+            "stub": true
+        }
+    }
+}
