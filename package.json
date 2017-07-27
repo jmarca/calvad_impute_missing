@@ -7,9 +7,9 @@
     "test": "tests"
   },
   "dependencies": {
-    "calvad_rscripts": "jmarca/calvad_rscripts",
+    "calvad_rscripts": "github:jmarca/calvad_rscripts",
     "calvad_vds_sites": "jmarca/calvad_vds_sites",
-    "calvad_wim_sites": "jmarca/calvad_wim_sites",
+    "calvad_wim_sites": "github:jmarca/calvad_wim_sites",
     "config_okay": "0.0.3",
     "configr": "jmarca/configr",
     "couch_check_state": "jmarca/couch_check_state.git",

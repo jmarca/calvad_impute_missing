@@ -47,8 +47,9 @@ console.log('setting configuration file to ',config_file,'.  Change with the --c
 var trigger_R_job = function(task,done){
     var R,logfile,logstream,errstream
     var tams = task.tams
+    var year = task.year
 
-    task.env.RYEAR=task.year
+    task.env.RYEAR=year
     task.env.TAMS_SITE=tams
     task.env.TAMS_IMPUTE=1
     task.env.TAMS_PLOT_PRE=1
@@ -69,7 +70,7 @@ var trigger_R_job = function(task,done){
     R.stdout.pipe(logstream)
     R.stderr.pipe(errstream)
     R.on('exit',function(code){
-        console.log('got exit: '+code+', for ',tams)
+        console.log('got exit: '+code+', for ',tams,' ',year)
         // testing
         // throw new Error('croak')
         return done()
@@ -79,16 +80,19 @@ var trigger_R_job = function(task,done){
 var years = []//,2011];
 
 
-var tams_sites = require('calvad_tams_sites')
-
+const wim_sites = require('calvad_wim_sites')
+const tams_row_has_year = wim_sites.tams_row_has_year
+const tams_sitelist = wim_sites.tams_sitelist
 var unique_tams = {}
 
 var doover = process.env.TAMS_REDO
 
 function _configure(cb){
+    console.log('configuring')
     if(config === undefined){
         config_okay(config_file,function(e,c){
             if(e) throw new  Error(e)
+            console.log(c)
             opts.env.R_CONFIG=config_file
             config = c
             if(config.calvad !== undefined){
@@ -119,7 +123,36 @@ function _configure(cb){
     }
 }
 
+function redoer(year,queuer){
+
+    // hack to force all to be redone?
+    console.log('scheduling redo of all tams sites')
+
+    const check_year = tams_row_has_year(year)
+
+
+    // can do a little better than wim version here
+    // because tams sites list has information on the
+    // years of data available
+    // so I can skip if data does not include year
+    tams_sitelist.forEach(function(row){
+        const siteid = row.site
+
+        if(check_year(row) && unique_tams[siteid+year] === undefined){
+            var _opts = Object.assign({},opts)
+            _opts.tams=siteid
+            _opts.year=year
+            console.log('push ',siteid)
+            queuer.defer(trigger_R_job,_opts)
+            unique_tams[siteid+year]=1
+        }
+        return null
+    })
+}
+
+
 _configure(function(e,r){
+    console.log('processing years')
     var fileq
     var yearq
     if(e) throw new Error(e)
@@ -128,69 +161,57 @@ _configure(function(e,r){
 
 
     years.forEach(function(year){
-
+        console.log('checking ',year)
         var opt =Object.assign(opts,
                                {'year':year
-                                ,'config_file':config_file})
-        //opt.couchdb = config.couchdb
+                                ,'couchdb': config.couchdb})
         function handle_couch_query(e,r){
-            var w
-            // // how to hack to force a few detectors to be redone
-            // r.rows = [{ id: 'tams.12.S ',  key: [ 2010, 'nothing', '12' ,'S'  ], value: null }
-            //          ,{ id: 'tams.28.N ', key: [ 2010, 'nothing', '28' ,'N' ], value: null }
-            //          ,{ id: 'tams.23.W ', key: [ 2010, 'nothing', '23' ,'W'  ], value: null }
-            //          ,{ id: 'tams.108.S', key: [ 2010, 'nothing', '108','S' ], value: null }
-            //          ,{ id: 'tams.27.S ', key: [ 2010, 'nothing', '27' ,'S'  ], value: null }
-            //          ,{ id: 'tams.26.E ', key: [ 2010, 'nothing', '26' ,'E'  ], value: null }
-            //          ,{ id: 'tams.22.W ', key: [ 2010, 'nothing', '22' ,'W'  ], value: null }
-            //          ]
-            console.log(e,r)
+            console.log('couch error is\n',e)
+            console.log('couch result is\n',r)
             if(r && r.rows !== undefined && r.rows.length >0){
                 console.log("loaded r.rows of length "+r.rows.length)
             }else{
-                console.log('got nothing from couchdb')
-                doover = 1
-            }
-
-            // hack to force all to be redone?
-            if(doover){
-                console.log('scheduling redo of all tams sites')
-                var allsites = tams_sites.sites
-
-                allsites.forEach(function(row){
-                    w = row.site
-                    if(unique_tams[w+year] === undefined){
-                        var _opts = Object.assign({},opts)
-                        _opts.tams=w
-                        _opts.year=year
-                        if(row.site < 800){
-                            console.log('push ',row.site)
-                            fileq.defer(trigger_R_job,_opts)
-                        }
-                        unique_tams[w+year]=1
-                    }
-                    return null
-                })
+                console.log('got nothing from couchdb, forcing redo of ',year)
+                redoer(year,fileq)
+                return null
             }
             if(r && r.rows !== undefined && r.rows.length >0){
                 r.rows.forEach(function(row){
-                    w = row.key[2]
-                    if(unique_tams[w+year] === undefined){
+                    const siteid = row.key[2]
+                    if(unique_tams[siteid+year] === undefined){
                         var _opts = Object.assign({},opts)
-                        _opts.tams=w
+                        _opts.tams=siteid
                         _opts.year=year
-                        console.log('push site: ',w)
+                        console.log('push site: ',siteid)
 
                         fileq.defer(trigger_R_job,_opts)
                     }
-                    unique_tams[w+year]=1
+                    unique_tams[siteid+year]=1
                     return null
                 })
             }
             return null
         }
-        //console.log(opt)
-        yearq.defer(tams_sites,opt,handle_couch_query)
+        if(doover){
+            console.log('forcing do over')
+            // skip the couch query altogether
+            console.log('forcing redo of ',year)
+            redoer(year,fileq)
+        }else{
+            console.log('checking with couchdb for done state')
+             console.log(opt.year)
+             console.log(opt.couchdb)
+
+
+            yearq.defer( cb => {
+                wim_sites.get_tams_need_imputing(opt,function(e,r){
+                    if(e) return cb(e)
+                    var result = handle_couch_query(e,r)
+                    return cb(null,result)
+                })
+                return null
+            })
+        }
         return null
     })
 

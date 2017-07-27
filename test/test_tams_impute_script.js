@@ -42,8 +42,14 @@ before(function(done){
         config.postgresql.db=test_pg_db_unique
         q = queue(3) // parallel jobs
         q.defer(async function(cb){
-            await couch_utils.create_tempdb({options:config},config.couchdb.testdb)
-            await couch_utils.load_tams({options:config})
+            const create_result = await couch_utils.create_tempdb({options:config},config.couchdb.db)
+            console.log('create result is ',create_result)
+            const load_jobs = couch_utils.load_tams(config)
+            console.log('load tams,  jobs isArray',Array.isArray(load_jobs),load_jobs.length)
+            console.log(load_jobs)
+            const results = await Promise.all(load_jobs)
+            console.log('results.length is ',results.length)
+
             return cb()
         })
         // job 2 is pgsql
@@ -71,19 +77,19 @@ before(function(done){
 
 
 after(function(done){
-    var q = queue()
-    console.log('cleaning after test_tams_impute...dropping temp databases')
-    q.defer(pg_utils.delete_pgdb,config,config.postgresql.db)
+    // var q = queue()
+    // console.log('cleaning after test_tams_impute...dropping temp databases')
+    // q.defer(pg_utils.delete_pgdb,config,config.postgresql.db)
 
-    q.defer(couch_utils.delete_tempdb,{options:config},config.couchdb.testdb)
-    q.defer(fs.unlink,path.normalize(process.cwd()+'/'+logfile))
-    q.defer(fs.unlink,path.normalize(process.cwd()+'/'+config_file_2))
-    // q.defer(remove_images,'87','S',2012,config.calvad.tamspath)
-    //q.defer(fs.unlink,
-    //        path.normalize(process.cwd()+'/'+'log/tamsimpute.log'))
-    q.awaitAll(function(e,r){
+    // q.defer(couch_utils.delete_tempdb,{options:config},config.couchdb.testdb)
+    // q.defer(fs.unlink,path.normalize(process.cwd()+'/'+logfile))
+    // q.defer(fs.unlink,path.normalize(process.cwd()+'/'+config_file_2))
+    // // q.defer(remove_images,'87','S',2012,config.calvad.tamspath)
+    // //q.defer(fs.unlink,
+    // //        path.normalize(process.cwd()+'/'+'log/tamsimpute.log'))
+    // q.awaitAll(function(e,r){
         return done()
-    })
+//    })
 })
 
 
@@ -92,6 +98,7 @@ describe('trigger_tams_impute, a slow test i have not done yet',function(){
        function(done){
            var logstream,errstream
            var commandline = ['trigger_tams_impute.js','--config',config_file_2]
+           console.log(commandline)
            return done()
            // var job  = spawn('node', commandline)
            // job.stderr.setEncoding('utf8')

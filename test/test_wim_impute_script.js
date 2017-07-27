@@ -40,12 +40,17 @@ before(function(done){
         config.couchdb.trackingdb = config.couchdb.testdb
         config.couchdb.db = config.couchdb.testdb
         config.postgresql.db=test_pg_db_unique
-        q = queue(3) // parallel jobs
-        q.defer(async function(cb){
-            var first = await couch_utils.create_tempdb({options:config},config.couchdb.testdb)
-            var second = await couch_utils.load_wim_async({options:config})
-            console.log('done with first','and second',second)
-            return cb()
+        q = queue(1) // parallel jobs
+        q.defer(function(cb){
+            // job 1 is couchdb
+            var qb = queue(1) // sequential jobs
+            qb.defer(couch_utils.create_tempdb,{options:config},config.couchdb.testdb)
+            qb.defer(couch_utils.load_wim,{options:config})
+            qb.await(function(e,r1,r2){
+                console.log('couchdb sorted')
+                should.not.exist(e)
+                return cb()
+            })
         })
         // job 2 is pgsql
         q.defer(pg_utils.create_pgdb,config,config.postgresql.db)
@@ -63,6 +68,7 @@ before(function(done){
 
         q.await(function(e,r1,r2,r3){
             should.not.exist(e)
+            console.log('starting test')
             return done()
         })
         return null

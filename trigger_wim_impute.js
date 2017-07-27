@@ -195,7 +195,14 @@ _configure(function(e,r){
         // console.log(opt)
         // console.log('deferring wim_sites')
 
-        yearq.defer(wim_sites,opt,handle_couch_query)
+        yearq.defer(function(cb){
+            wim_sites.get_wim_need_imputing(opt,function(e,r){
+                if(e) return cb(e)
+                var result = handle_couch_query(e,r)
+                return cb(null,result)
+            })
+            return null
+        })
         return null
     })
 
