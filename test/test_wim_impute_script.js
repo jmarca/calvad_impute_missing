@@ -34,6 +34,7 @@ before(function(done){
             throw new Error('node.js needs a good croak module')
         }
         config = Object.assign(config,c)
+        config.calvad.years=[2012]
         config.couchdb={}
         config.couchdb=Object.assign(config.couchdb,c.couchdb)
         config.couchdb.testdb='test%2f'+test_db_unique
