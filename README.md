@@ -145,6 +145,9 @@ An example test.config.json file looks like this:
         "auth":{
          "username":"sqluser"
         },
+        "admin":{
+            "user":"sqladminacct"
+        },
         "db":"spatialvds"
     },
     "calvad":{
@@ -157,10 +160,17 @@ An example test.config.json file looks like this:
 }
 ```
 
-Two things to note.  First the database information is used primarily
+Three things to note.  First the database information is used primarily
 so as to set up temporary, test-only databases.  Second, the "calvad"
 part of the config file should point to the test files included in
-this repository.
+this repository. Finally, if the usual "postgres" admin account is
+inappropriate, then you can change that using the "admin->user" field
+in the config file.  Note that "user" is not "username".  This is not
+consistent, and may be changed in the future, but for now the admin
+user is called "user" while the regular username is specified with
+"username".  The postgresql admin account is only used to create a
+temporary table, and then to delete that temporary table.  Look in
+`test/pg_utils.js` for more details.
 
 More notes:
 
