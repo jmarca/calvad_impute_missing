@@ -88,5 +88,8 @@ list.df.tams.amelia <- calvadrscripts::process.tams.site(
                                            tams.path=tams.path,
                                            trackingdb=trackingdb
                                        )
-
-quit(save='no',status=10)
+status <- 10 ## lame convention, but 10 is good result
+if(length(list.df.tams.amelia) == 0){
+    status <- 0 ## means no data found or similar
+}
+quit(save='no',status=status)

@@ -43,7 +43,7 @@ function delete_tempdb(task,db,cb){
     cdb =
         [task.options.couchdb.host+':'+task.options.couchdb.port
          ,db].join('/')
-    console.log('deleting ',cdb)
+    //console.log('deleting ',cdb)
     superagent.del(cdb)
     .type('json')
     .auth(task.options.couchdb.auth.username
@@ -72,11 +72,11 @@ function put_wim_views(config,db,cb){
     opts.doc = require(calvad_wim_sites_dir + '/couchdb_views/wim.json')
     put_a_view(opts)
         .then(r =>{
-            console.log('done with wim view put')
+            //console.log('done with wim view put')
             return cb(null,r)
         })
         .catch(e =>{
-            console.log('error in wim view put')
+            //console.log('error in wim view put')
             return cb(e)
         })
     return null
@@ -91,7 +91,7 @@ function put_tams_views(config,db){
 
 
 function put_file_promise(file,couch,cb){
-    console.log(file,'\n',couch)
+    //console.log(file,'\n',couch)
     var db_dump = require(file)
     //console.log(Object.keys(db_dump))
     const req = superagent.post(couch)
@@ -103,11 +103,11 @@ function put_file_promise(file,couch,cb){
 
 function put_file(file,couch,cb){
     const req = put_file_promise(file,couch)
-    console.log('calling end on request object')
+    //console.log('calling end on request object')
     req.end(function(e,r){
         should.not.exist(e)
         should.exist(r)
-        console.log('done with ',file)
+        //console.log('done with ',file)
         return cb(e,1)
     })
     return null
@@ -151,7 +151,7 @@ function load_wim(task,cb){
             r.should.have.property('text')
             superagent_sucks = JSON.parse(r.text)
             superagent_sucks.should.have.property('doc_count',5)
-            console.log('loaded wim data',superagent_sucks.doc_count)
+            //console.log('loaded wim data',superagent_sucks.doc_count)
             return cb()
 
         })
@@ -169,7 +169,7 @@ function load_files(config,db_files){
     db_files.forEach(function(file){
         jobs.push(put_file_promise(file,cdb))
     })
-    console.log(jobs)
+    //console.log(jobs)
     return jobs
 }
 
@@ -180,8 +180,8 @@ function load_tams(config){
     const load_jobs = load_files(config,db_files)
     const put_job = put_tams_views(config,config.couchdb.db)
     const jobs = [].concat(load_jobs,put_job)
-    console.log('load tams,  jobs isArray',Array.isArray(jobs),jobs.length)
-    console.log(jobs)
+    //console.log('load tams,  jobs isArray',Array.isArray(jobs),jobs.length)
+    //console.log(jobs)
     return jobs
 }
 
@@ -249,7 +249,7 @@ function demo_db_after(config){
                   ]
         var q = queue()
         dbs.forEach(function(db){
-            console.log('dropping '+db)
+            //console.log('dropping '+db)
             if(!db) return null
             q.defer(delete_tempdb,task,db)
             return null
