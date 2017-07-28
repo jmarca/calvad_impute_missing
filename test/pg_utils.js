@@ -4,7 +4,7 @@ var get_pool = require('psql_pooler').get_pool
 
 async function command(c,config,f){
     const psql_opts = config.postgresql
-    console.log(psql_opts)
+    // console.log(psql_opts)
     const host = psql_opts.host
     const user = psql_opts.username
     // const pass = psql_opts.password
@@ -20,7 +20,7 @@ async function command(c,config,f){
 
         if(c){
             const commandc = commandline + ' -c ' + c
-            console.log(commandc)
+            //console.log(commandc)
             exec (commandc
                   ,function(e,stdout,stderr){
                       if(e){
@@ -34,7 +34,7 @@ async function command(c,config,f){
         // will only be here if not c
         if(f){
             const commandf = commandline + ' -f ' + f
-            console.log(commandf)
+            //console.log(commandf)
             exec (commandf
                   ,function(e,stdout,stderr){
                       if(e){
@@ -67,7 +67,7 @@ function delete_pgdb(config,db,delete_pgdb_cb){
                        "-p", port
                        , db
                       ].join(' ');
-    console.log('deleting pgsql db ',db)
+    //console.log('deleting pgsql db ',db)
 
     exec(commandline
          ,function(e,out,err){
@@ -141,7 +141,7 @@ async function create_pgdb(config,db,create_pgdb_cb){
 
     f =  process.cwd()+'/test/files/wim.tables.constraints.sql'
     await command(null,user_config,f)
-    console.log('done creating pg stuff')
+    //console.log('done creating pg stuff')
 
     return create_pgdb_cb()
 
