@@ -200,7 +200,8 @@ Once that has been set up, you should run the tests and make sure all is well.
 npm test
 ```
 
-You might need to edit the package.json and give the test script a longer timeout value.  Currently the test script line reads:
+You might need to edit the package.json and give the test script a
+longer timeout value.  Currently the test script line reads:
 
 ```
     "test": "mocha ./test/test_* -R list --timeout 240000",
@@ -208,6 +209,8 @@ You might need to edit the package.json and give the test script a longer timeou
 
 The 240000 is the number of miliseconds to allow before cancelling the test.
 If you change 240000 to 0 you will give the test infinite time.
+Running the tests on lysithia currently needs about 15 minutes, which
+is 900000 milliseconds.
 
 
 ## Example config.json
