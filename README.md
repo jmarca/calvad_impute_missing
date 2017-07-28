@@ -1,11 +1,31 @@
 # CalVAD impute missing
 
+# Important note
+
+This **REQUIRES** npm version greater than 5.0.  It will fail to
+install the R libraries properly on npm version 5.0.x.  It has been
+tested to work on version 5.3.0.
+
+To install all of the dependecy libraries, run
+
+```
+npm install
+```
+
+The install process installs both javascript and R packages.  This
+takes some time, because there are a lot of files to download
+(including rather large files that are used to test the R code) and
+because many of the R packages require compilation.  On lysithia this
+took about 21 minutes.
+
+# Description
+
 A repository to hold code that triggers the various CalVAD imputation
 routines
 
 # Overview
 
-This code imputes missing values in VDS (PeMS) and WIM data.
+This code imputes missing values in VDS (PeMS) and WIM data, and now TAMS data.
 
 The instructions below step through how to run this code.
 
@@ -58,11 +78,23 @@ R code.
 
 ## JS dependencies
 
-First, download all the JavaScript dependencies using npm:
+First, download all the JavaScript and R dependencies using npm.  As
+noted above, make sure you are running npm version 5.3.0 or better.
+To upgrade npm, just run
 
 ```
+sudo npm i -g npm
+```
+
+Once you have verified that npm is recent, install the dependencies.
+
+```
+rm -rf node_modules .Rlibs
 npm install
 ```
+
+I highly recommend starting fresh as of the latest TAMS upgrade (July
+2017) because many of the libraries have changed.
 
 I have one test that makes sure that the program can get files from
 the data repository that serves up the broken-up PeMS files.  This
@@ -114,22 +146,33 @@ An example test.config.json file looks like this:
          "username":"sqluser"
         },
         "db":"spatialvds"
+    },
+    "calvad":{
+        "vdspath":"./tests/testthat/evenmorefiles/",
+        "wimpath":"./tests/testthat/evenmorefiles/",
+        "tamspath":"./tests/testthat/evenmorefiles/",
+        "districts":["D01","D03","D04","D06","D09","D10","D11","D12"],
+        "years":[2012,2016,2017]
     }
 }
 ```
 
-Two things to note.  First the couchdb config file must have the
-correct username and password.  Also, the various other elements
-(trackingdb, dbname, design, and view) need to be there, but the
-contents doesn't matter at all.
+Two things to note.  First the database information is used primarily
+so as to set up temporary, test-only databases.  Second, the "calvad"
+part of the config file should point to the test files included in
+this repository.
 
-Second, the postgresql configuration *must* point to a database that
-has all of the required information to load the raw data for site 108
-in 2012.  Also, the password for the postgresql connection is *not*
-included in this file.  Instead, I rely on the existence of a .pgpass
-file, as does postgresql itself.  Please search the postgresql docs
-for ".pgpass" to figure out how to use this file, but in a nutshell,
-you need an entry like:
+More notes:
+
+The couchdb config file must have the correct username and password.
+Also, the various other elements (trackingdb, dbname, design, and
+view) need to be there, but the contents doesn't matter at all.
+
+The postgresql configuration does not need the password if you are
+using a .pgpass file, or if you have included the password in an
+environment variable.  See the PostgreSQL documentation website for
+more details.  Please search those docs for ".pgpass" to figure out
+how to use this file, but in a nutshell, you need an entry like:
 
 ```
 #hostname:port:database:username:password
@@ -139,6 +182,23 @@ you need an entry like:
 In the above example, the connection to *any* database on *any* port
 to host 127.0.0.1 with username "sqluser" will try the password
 "myocardial infarction".
+
+
+Once that has been set up, you should run the tests and make sure all is well.
+
+```
+npm test
+```
+
+You might need to edit the package.json and give the test script a longer timeout value.  Currently the test script line reads:
+
+```
+    "test": "mocha ./test/test_* -R list --timeout 240000",
+```
+
+The 240000 is the number of miliseconds to allow before cancelling the test.
+If you change 240000 to 0 you will give the test infinite time.
+
 
 ## Example config.json
 
@@ -166,13 +226,24 @@ databases.
          "username":"sqlusername"
         },
         "db":"spatialvds"
+    },
+    "calvad":{
+        "vdspath":"/data/pems/breakup/",
+        "wimpath":"/data/wim/",
+        "tamspath":"/data/tams/data/",
+        "districts":["D03","D04","D05","D06","D07","D08","D10","D11","D12"],
+        "years":[2012,2013,2014,2015,2016,2017]
     }
 }
 
 ```
 
-Make sure the right hosts, ports, usernames, and (for couchdb) password are
-inserted in the above.
+
+Make sure the right hosts, ports, usernames, and (for couchdb)
+password are correct for your situation in the above, and also make
+sure you have the right pasth for the "calvad" part, as well as the
+districts and years you want to process.  In practice, it is best to
+process just one year at a time.
 
 
 # R dependencies
@@ -197,73 +268,32 @@ To install the required libraries, at the command line, type
 npm install
 ```
 
-This will *NOT* install all of the required R libraries.  That must be
-done from within R as the root user, or from your operating system's
-package manager.
+In earlier versions of this library, this would not have installed all
+of the required R libraries.  Things have changed recently, and all of
+the required libraries should be installed automatically if they are
+not present in the system library.
 
-To find out if anything is missing, just do
 
-```
-Rscript Rtest.R
-```
-
-from the command line.  That will fail with a note about what library
-might be missing.  If it actually starts running R, then you have all
-of the installed library files and any remaining problems are most
-likely configuration issues (pointing to the right couchdb or
-postgresql databases).
-
-## CRAN R code
-
-There are many packages that are used from the Comprehensive R Archive
-Network, and others that can be loaded from github directly using the
-R devtools package.
-
-Aside from devtools itself, at the moment the required R packages can
-be loaded using CRAN versions.  The list of R packages follows.
-
-```
-install.packages(
-    c('Amelia',
-      'Hmisc',
-      'MASS',
-      'MBA',
-      'OpenStreetMap',
-      'RCurl',
-      'RJSONIO',
-      'RPostgreSQL',
-      'Zelig',
-      'animation',
-      'cluster',
-      'doMC',
-      'fields',
-      'ggplot2',
-      'lattice',
-      'maps',
-      'mgcv',
-      'plyr',
-      'read.ogr',
-      'sp',
-      'spBayes',
-      'spTimer',
-      'spatial',
-      'testthat',
-      'zoo'))
-```
 
 
 
 # Running the imputations
 
-There are four different kinds of imputation.
+There are five different kinds of imputation.
 
 1. Impute missing data at VDS sites
 
 2. Impute missing data at WIM sites
 
-3. Impute truck counts at VDS sites
+3. Impute missing data at TAMS sites
 
-4. Impute vehicle counts at WIM sites
+4. Impute truck counts at VDS sites
+
+5. Impute vehicle counts at WIM and TAMS sites
+
+Only the first three are handled with this library.  Imputations 4 and
+5 are done elsewhere.
+
 
 
 # Actually running the imputation (notes as I run it in 2014 for 2010)
@@ -282,7 +312,7 @@ After imputing WIM and VDS, you have to merge pairs.  That is what I
 am working on now.
 find D07/60/W -name *2012.120.imputed.RData  -size +100k -delete
 
-# April 2015 notes
+# April 2015 notes (kept for historical interest only)
 
 The backing R library has been completely redone, and there is a
 slightly different procedure for loading the R code.  That said, the R
@@ -337,7 +367,7 @@ The trackingdb should be set to "vdsdata%2ftracking" in production,
 and the dbname to "vdsdata".  The design and view aren't used here,
 but are used in other CalVAD modules.
 
-# Feb 2016 notes
+# Feb 2016 notes  (kept for historical interest only)
 
 The test.config.json should have the following bit at the end
 
