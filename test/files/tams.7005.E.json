@@ -1,0 +1,210 @@
+{
+    "_id": "tams.7005.E",
+    "_rev": "33-dd52bf776100e6081c74a61d8db1bde0",
+    "2017": {
+        "tamsraw_chain_lengths": [
+            47,
+            46,
+            42,
+            41,
+            67
+        ],
+        "tamsraw_max_iterations": 0,
+        "imputed": "finished"
+    },
+    "2016": {
+        "tamsraw_chain_lengths": [
+            7,
+            8,
+            9,
+            11,
+            8
+        ],
+        "tamsraw_max_iterations": 0,
+        "imputed": "finished"
+    },
+    "_attachments": {
+        "7005_E_2016_imputed_006.png": {
+            "content_type": "image/png",
+            "revpos": 33,
+            "digest": "md5-fLCqd64gCSu+G4QxB/hnWg==",
+            "length": 1044529,
+            "stub": true
+        },
+        "7005_E_2016_imputed_005.png": {
+            "content_type": "image/png",
+            "revpos": 32,
+            "digest": "md5-VYSOXUti1cTFG54Nvu5kTA==",
+            "length": 639483,
+            "stub": true
+        },
+        "7005_E_2016_imputed_004.png": {
+            "content_type": "image/png",
+            "revpos": 31,
+            "digest": "md5-D7nRrQRC5RdU3DuaLbu3Gw==",
+            "length": 944065,
+            "stub": true
+        },
+        "7005_E_2016_imputed_003.png": {
+            "content_type": "image/png",
+            "revpos": 30,
+            "digest": "md5-YaBkZJ04rJGnbLE8uHEQ6Q==",
+            "length": 494853,
+            "stub": true
+        },
+        "7005_E_2016_imputed_002.png": {
+            "content_type": "image/png",
+            "revpos": 29,
+            "digest": "md5-+4XFnmV1XEhrdPZFBo1bOg==",
+            "length": 1187434,
+            "stub": true
+        },
+        "7005_E_2016_imputed_001.png": {
+            "content_type": "image/png",
+            "revpos": 28,
+            "digest": "md5-O76mcZluj2K/lngCjODclg==",
+            "length": 662414,
+            "stub": true
+        },
+        "ameliaplots_002.png": {
+            "content_type": "image/png",
+            "revpos": 26,
+            "digest": "md5-qz3NyBy43Y549mJmGsktkw==",
+            "length": 293768,
+            "stub": true
+        },
+        "ameliaplots_001.png": {
+            "content_type": "image/png",
+            "revpos": 25,
+            "digest": "md5-7b0/EnyKPIk3PFLaO7n/jA==",
+            "length": 275721,
+            "stub": true
+        },
+        "7005_E_2016_raw_006.png": {
+            "content_type": "image/png",
+            "revpos": 23,
+            "digest": "md5-F0BSyPxQwLMriZeDfhXuLg==",
+            "length": 996212,
+            "stub": true
+        },
+        "7005_E_2016_raw_005.png": {
+            "content_type": "image/png",
+            "revpos": 22,
+            "digest": "md5-hAj2OCduWhWX2RRKoGIXCQ==",
+            "length": 617746,
+            "stub": true
+        },
+        "7005_E_2016_raw_004.png": {
+            "content_type": "image/png",
+            "revpos": 21,
+            "digest": "md5-ovjVX/8UdAlq3RO4WkhyRg==",
+            "length": 899124,
+            "stub": true
+        },
+        "7005_E_2016_raw_003.png": {
+            "content_type": "image/png",
+            "revpos": 20,
+            "digest": "md5-lm0m7fDtn3o5g63lOikY2A==",
+            "length": 469467,
+            "stub": true
+        },
+        "7005_E_2016_raw_002.png": {
+            "content_type": "image/png",
+            "revpos": 19,
+            "digest": "md5-OKUJZ9i+ZQ6HsxIHYz56EA==",
+            "length": 1130611,
+            "stub": true
+        },
+        "7005_E_2016_raw_001.png": {
+            "content_type": "image/png",
+            "revpos": 18,
+            "digest": "md5-eChIzmY0toAZ+qjJUA50qw==",
+            "length": 635943,
+            "stub": true
+        },
+        "7005_E_2017_imputed_006.png": {
+            "content_type": "image/png",
+            "revpos": 17,
+            "digest": "md5-W5kIqF9zO0NsmJfs/yrCYg==",
+            "length": 409587,
+            "stub": true
+        },
+        "7005_E_2017_imputed_005.png": {
+            "content_type": "image/png",
+            "revpos": 16,
+            "digest": "md5-66vvIo91E7ZI20B0rmyecw==",
+            "length": 394498,
+            "stub": true
+        },
+        "7005_E_2017_imputed_004.png": {
+            "content_type": "image/png",
+            "revpos": 15,
+            "digest": "md5-71dvnLfidjT+ww+8EeQi7w==",
+            "length": 435270,
+            "stub": true
+        },
+        "7005_E_2017_imputed_003.png": {
+            "content_type": "image/png",
+            "revpos": 14,
+            "digest": "md5-OXIL165LedHBYt5oxGIukQ==",
+            "length": 414475,
+            "stub": true
+        },
+        "7005_E_2017_imputed_002.png": {
+            "content_type": "image/png",
+            "revpos": 13,
+            "digest": "md5-swbMSSJG55AqZgYeX6b+bw==",
+            "length": 448613,
+            "stub": true
+        },
+        "7005_E_2017_imputed_001.png": {
+            "content_type": "image/png",
+            "revpos": 12,
+            "digest": "md5-5kckqpnYdt9nz90WnfcEvQ==",
+            "length": 410867,
+            "stub": true
+        },
+        "7005_E_2017_raw_006.png": {
+            "content_type": "image/png",
+            "revpos": 7,
+            "digest": "md5-z8WOkMVs7mxco6U51a+wRQ==",
+            "length": 232117,
+            "stub": true
+        },
+        "7005_E_2017_raw_005.png": {
+            "content_type": "image/png",
+            "revpos": 6,
+            "digest": "md5-YgilzHu/ot1kAEf9sEAIXg==",
+            "length": 240374,
+            "stub": true
+        },
+        "7005_E_2017_raw_004.png": {
+            "content_type": "image/png",
+            "revpos": 5,
+            "digest": "md5-bSZGcR7pak2u2O9tNs1WRw==",
+            "length": 244461,
+            "stub": true
+        },
+        "7005_E_2017_raw_003.png": {
+            "content_type": "image/png",
+            "revpos": 4,
+            "digest": "md5-Olmvxf2Lc4S1x7ijwkFZdg==",
+            "length": 249798,
+            "stub": true
+        },
+        "7005_E_2017_raw_002.png": {
+            "content_type": "image/png",
+            "revpos": 3,
+            "digest": "md5-0K6lziWyRQgJtAQQ8xIHyQ==",
+            "length": 257029,
+            "stub": true
+        },
+        "7005_E_2017_raw_001.png": {
+            "content_type": "image/png",
+            "revpos": 2,
+            "digest": "md5-vT7u1h2ZOaVhgqv3FvVETg==",
+            "length": 244291,
+            "stub": true
+        }
+    }
+}
