@@ -405,21 +405,41 @@ the system library.
 
 # Running the imputations
 
-There are five different kinds of imputation.
+There are five different kinds of imputation, three of which are
+handled by this package.  In the example command lines below, the
+number of simultaneous jobs is set to 1 (it is the only option for the
+VDS imputation).  If your computer has a lot of RAM, you can run more
+jobs, or, by using different config files, run different sets of years
+or districts in simultaneous, parallel jobs.
 
 1. Impute missing data at VDS sites
 
+```
+node ./trigger_vds_impute.js > vds_impute.log 2>&1 &
+```
 
 2. Impute missing data at WIM sites
 
+```
+NUM_RJOBS=1 node ./trigger_wim_impute.js > wim_impute.log 2>&1 &
+```
+
+
 3. Impute missing data at TAMS sites
+
+```
+NUM_RJOBS=1 node ./trigger_tams_impute.js > tams_impute.log 2>&1 &
+```
 
 4. Impute truck counts at VDS sites
 
+This is handled by the package `calvad_impute_trucks`.
+
 5. Impute vehicle counts at WIM and TAMS sites
 
-Only the first three are handled with this library.  Imputations 4 and
-5 are done elsewhere.
+This is handled by the package `calvad_impute_trucks`.
+
+
 
 
 
