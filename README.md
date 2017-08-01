@@ -76,10 +76,13 @@ From within the `calvad_impute_missing` directory, you need to
 download the requirements to run both the node.js/JavaScript, and the
 R code.
 
-## JS dependencies
+## JS and R dependencies
 
-First, download all the JavaScript and R dependencies using npm.  As
-noted above, make sure you are running npm version 5.3.0 or better.
+The package.json of this package and all of its dependencies have been
+designed so that `npm install` should download and install everything
+necessary for both R and JS.
+As noted above, make sure you are running npm version 5.3.0 or
+better.
 To upgrade npm, just run
 
 ```
@@ -87,14 +90,22 @@ sudo npm i -g npm
 ```
 
 Once you have verified that npm is recent, install the dependencies.
+Be aware that this will take some time.
 
 ```
-rm -rf node_modules .Rlibs
+rm -rf node_modules .Rlibs ## see note below
 npm install
 ```
 
-I highly recommend starting fresh as of the latest TAMS upgrade (July
-2017) because many of the libraries have changed.
+I highly recommend running the `rm -rf node_modules .Rlibs` command
+noted above so as to start fresh as of the latest TAMS upgrade (July
+2017); many of the libraries have changed.  If you've cleaned up and
+run npm install since July of 2017, you can save a lot of time by
+*not* running that command.
+
+One requirement that is not run by default is that the target couchdb
+database must have some views pre-installed for the imputation step to
+work properly.  This is noted below.
 
 I have one test that makes sure that the program can get files from
 the data repository that serves up the broken-up PeMS files.  This
@@ -213,6 +224,8 @@ Running the tests on lysithia currently needs about 15 minutes, which
 is 900000 milliseconds.
 
 
+# Running the imputation of missing values
+
 ## Example config.json
 
 The actual config.json file used in production is similar to the
@@ -225,6 +238,7 @@ databases.
         "host": "127.0.0.1",
         "port":5984,
         "trackingdb":"vdsdata%2ftracking",
+        "db":"vdsdata%2ftracking",
         "auth":{"username":"couchuser",
                 "password":"couchpass"
                },
@@ -258,37 +272,76 @@ sure you have the right pasth for the "calvad" part, as well as the
 districts and years you want to process.  In practice, it is best to
 process just one year at a time.
 
+## Deploy required views to CouchDB
 
-# R dependencies
+### WIM and TAMS views
 
-The R code of course requires R, as well as many packages like Amelia
-and Zoo.  One perfect way to make sure that your R environment has all
-the dependencies is to just try to run the code in an interactive R
-session and see where it crashes.
-
-
-## CalVAD R code
-
-Previously, I was using component to install R dependencies, with the
-ambition of packaging all of the files into a single R file.  That
-didn't work as well as planned, so I've switched to using npm.  All of
-*my* R libraries should have been installed automatically from github
-using the prior `npm install` command.
-
-To install the required libraries, at the command line, type
+To install the WIM and TAMS views, run the utility program that comes
+as part of the `calvad_wim_sites` package.  It should have been
+installed under `./node_modules/.bin`.  To run it, do the following:
 
 ```
+./node_modules/.bin/write_views --config config.json
+```
+
+To run it, you have to have a proper config file, as noted above.
+
+In some cases, even with a recent version of npm, an incorrect version
+of `config_okay` is assigned to the `calvad_wim_sites` package that
+contains the `write_views` program.  If the above command gives an
+error that looks like:
+
+```
+/home/james/repos/jem/calvad/calvad_impute_missing/node_modules/calvad_wim_sites/write_views.js:21
+    .then(async (config) => {
+    ^
+
+TypeError: Cannot read property 'then' of null
+    at Object.<anonymous> (/home/james/repos/jem/calvad/calvad_impute_missing/node_modules/calvad_wim_sites/write_views.js:21:5)
+    at Module._compile (module.js:569:30)
+    at Object.Module._extensions..js (module.js:580:10)
+    at Module.load (module.js:503:32)
+    at tryModuleLoad (module.js:466:12)
+    at Function.Module._load (module.js:458:3)
+    at Function.Module.runMain (module.js:605:10)
+    at startup (bootstrap_node.js:158:16)
+    at bootstrap_node.js:575:3
+```
+
+then the only solution at this time is to delete the node_modules
+directory and reinstall the dependencies:
+
+```
+rm -rf node_modules
 npm install
 ```
 
-In earlier versions of this library, this would not have installed all
-of the required R libraries.  Things have changed recently, and all of
-the required libraries should be installed automatically if they are
-not present in the system library.
+This has only happened a few times in testing, and so may not be an
+issue in practice.
 
 
+## Installing CalVAD R code
 
+As noted above, all of the required R libraries are installed by
+running `npm install`.  This works using two mechanisms.
 
+First there is a script in this package called `RinstallDeps.R`.  An
+identical script is contained in every one of the CalVAD R packages.
+This script will locate or create a directory called `.Rlibs` as a
+sibling of the top level `node_modules` directory in the current
+directory tree.  This is used as the location for all library and
+dependency installs.
+
+In other words, with a completely baseline R installation, containing
+only the required R libraries in the system library directories,
+running npm install will set up a *local* .Rlibs directory that
+contains everything else needed to run the CalVAD R code.
+
+In earlier versions of this library, this was not the case.  Running
+`npm install` would not have installed all of the required R
+libraries.  Things have changed recently, and all of the required
+libraries should be installed automatically if they are not present in
+the system library.
 
 # Running the imputations
 
