@@ -410,7 +410,12 @@ handled by this package.  In the example command lines below, the
 number of simultaneous jobs is set to 1 (it is the only option for the
 VDS imputation).  If your computer has a lot of RAM, you can run more
 jobs, or, by using different config files, run different sets of years
-or districts in simultaneous, parallel jobs.
+or districts in simultaneous, parallel jobs.  Note that if the tests
+pass okay, then these three command lines have already been run in a
+reduced form.  Problems that arise are likely to be related to RAM
+issues, or screwy input data.  If the tests don't pass, then you
+shouldn't try to run the following command lines, as they are unlikely
+to work.
 
 1. Impute missing data at VDS sites
 
