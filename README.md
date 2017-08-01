@@ -319,6 +319,66 @@ npm install
 This has only happened a few times in testing, and so may not be an
 issue in practice.
 
+### VDS views
+
+To install the VDS views to CouchDB, do the following (taken from the
+README file for the `calvad_vds_sites` package).  With a config file
+contained in a file called (as an example) "myconfig.json" (but most
+likely it will be the usual config.json file as defined above), and
+with the required views defined in the package `calvad_vds_sites`, you
+can run the following command:
+
+
+```
+node ./node_modules/couchdb_put_view/put_view.js -c my.config.json -v node_modules/calvad_vds_sites/couchdb_views/view.json
+```
+
+A good result will look like:
+
+```
+{ _: [],
+  c: 'test.config.json',
+  v: 'node_modules/calvad_vds_sites/couchdb_views/view.json' }
+/home/james/repos/jem/calvad/calvad_impute_missing
+{ ok: true,
+  id: '_design/vds',
+  rev: '1-c6ed2c21589806f03e7a6d87839fcb2e' }
+```
+
+If you already have the view installed in the target database
+(identified by the `{couchdb:{db:"vdsdata%2ftracking"}}` or similar
+entry in the config JSON file), then the output will complain about a
+conflict.  For example:
+
+```
+{ _: [],
+  c: 'test.config.json',
+  v: 'node_modules/calvad_vds_sites/couchdb_views/view.json' }
+/home/james/repos/jem/calvad/calvad_impute_missing
+/home/james/repos/jem/calvad/calvad_impute_missing/node_modules/couchdb_put_view/couchdb_put_view.js:67
+        if(err) throw new Error(err)
+                ^
+
+Error: Error: Conflict
+    at /home/james/repos/jem/calvad/calvad_impute_missing/node_modules/couchdb_put_view/couchdb_put_view.js:67:23
+    at Request.callback (/home/james/repos/jem/calvad/calvad_impute_missing/node_modules/superagent/lib/node/index.js:688:3)
+    at /home/james/repos/jem/calvad/calvad_impute_missing/node_modules/superagent/lib/node/index.js:883:18
+    at IncomingMessage.<anonymous> (/home/james/repos/jem/calvad/calvad_impute_missing/node_modules/superagent/lib/node/parsers/json.js:16:7)
+    at emitNone (events.js:91:20)
+    at IncomingMessage.emit (events.js:188:7)
+    at endReadableNT (_stream_readable.js:975:12)
+    at _combinedTickCallback (internal/process/next_tick.js:80:11)
+    at process._tickCallback (internal/process/next_tick.js:104:9)
+```
+
+This conflict error is okay.  All it means is that there is already a
+view in the database with the same name as the view you are trying to
+load, and couchdb is set up to reject such conflicts unless you also
+provide it with a revision number.  Since the point is to put the view
+into an empty database, not to update it in an active database, there
+is no problem with this error message.
+
+
 
 ## Installing CalVAD R code
 
@@ -348,6 +408,7 @@ the system library.
 There are five different kinds of imputation.
 
 1. Impute missing data at VDS sites
+
 
 2. Impute missing data at WIM sites
 
