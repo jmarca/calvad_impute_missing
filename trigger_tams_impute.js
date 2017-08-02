@@ -109,7 +109,6 @@ function _configure(cb){
     if(config === undefined){
         config_okay(config_file,function(e,c){
             if(e) throw new  Error(e)
-            console.log(c)
             opts.env.R_CONFIG=config_file
             config = c
             if(config.calvad !== undefined){
@@ -231,9 +230,8 @@ _configure(function(e,r){
             console.log('forcing redo of ',year)
             redoer(year,fileq)
         }else{
-            console.log('checking with couchdb for done state')
-             console.log(opt.year)
-             console.log(opt.couchdb)
+            console.log('checking with couchdb for done state',opt.year)
+             //console.log(opt.couchdb)
 
 
             yearq.defer( cb => {
