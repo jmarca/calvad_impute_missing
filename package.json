@@ -13,7 +13,7 @@
     "config_okay": "0.0.3",
     "configr": "jmarca/configr",
     "couch_check_state": "jmarca/couch_check_state.git",
-    "couch_set_state": "jmarca/couch_set_state.git",
+    "couch_set_state": "github:jmarca/couch_set_state",
     "d3-queue": "",
     "glob": "",
     "lodash": "",

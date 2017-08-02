@@ -15,6 +15,14 @@ var num_CPUs = process.env.NUM_RJOBS || require('os').cpus().length
 
 var R;
 
+
+const setter = require('couch_set_state')
+const wim_sites = require('calvad_wim_sites')
+const tams_row_has_year = wim_sites.tams_row_has_year
+const set_tams_data_state = wim_sites.set_tams_data_state
+const tams_sitelist = wim_sites.tams_sitelist
+var unique_tams = {}
+
 // configuration stuff
 var rootdir = path.normalize(process.cwd())
 var RCall = ['--no-restore','--no-save','tams_impute.R']
@@ -69,8 +77,22 @@ var trigger_R_job = function(task,done){
                                        ,mode: 0o666 })
     R.stdout.pipe(logstream)
     R.stderr.pipe(errstream)
-    R.on('exit',function(code){
+    R.on('exit',async function(code){
         console.log('got exit: '+code+', for ',tams,' ',year)
+        let state = 'finished'
+        if(code !== 10 ){
+            if(code === 'NULL' || code === null){
+                state = 'possible RAM issues'
+            }else{
+                state = 'issues'
+            }
+        }
+        await setter({'db':task.couchdb.db
+                      ,'doc': tams
+                      ,'year':year
+                      ,'state':'imputed'
+                      ,'value':state})
+
         // testing
         // throw new Error('croak')
         return done()
@@ -79,11 +101,6 @@ var trigger_R_job = function(task,done){
 
 var years = []//,2011];
 
-
-const wim_sites = require('calvad_wim_sites')
-const tams_row_has_year = wim_sites.tams_row_has_year
-const tams_sitelist = wim_sites.tams_sitelist
-var unique_tams = {}
 
 var doover = process.env.TAMS_REDO
 
@@ -135,17 +152,33 @@ function redoer(year,queuer){
     // because tams sites list has information on the
     // years of data available
     // so I can skip if data does not include year
-    tams_sitelist.forEach(function(row){
+    const site_years = []
+    const couch_state_jobs = []
+    tams_sitelist.forEach( row => {
         const siteid = row.site
-
+        console.log(siteid)
         if(check_year(row) && unique_tams[siteid+year] === undefined){
-            var _opts = Object.assign({},opts)
-            _opts.tams=siteid
-            _opts.year=year
-            console.log('push ',siteid)
-            queuer.defer(trigger_R_job,_opts)
+            site_years.push({'tams':siteid,'year':year})
             unique_tams[siteid+year]=1
+            queuer.defer(setter
+                         ,Object.assign({}
+                                        ,config.couchdb
+                                        ,{'doc': 'tams.'+siteid
+                                          ,'year':year
+                                          ,'state':'data'
+                                          ,'value':row.table_data}))
         }
+        return null
+    })
+
+    site_years.forEach( sy =>{
+        console.log(sy.tams,sy.year)
+        var _opts = Object.assign({},opts)
+        _opts.tams=sy.tams
+        _opts.year=sy.year
+        console.log('push ',sy.tams)
+        queuer.defer(trigger_R_job,_opts)
+
         return null
     })
 }
