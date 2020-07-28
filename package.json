@@ -28,7 +28,7 @@
   "devDependencies": {
     "babel-eslint": "^5.0.0",
     "couchdb_put_view": "github:jmarca/couchdb_put_view",
-    "eslint": "^2.2.0",
+    "eslint": "^4.18.2",
     "eslint-plugin-babel": "^3.1.0",
     "ink-docstrap": "^1.1.4",
     "istanbul": "^0.4.2",
