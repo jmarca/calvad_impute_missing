@@ -17,7 +17,7 @@
     "d3-queue": "",
     "glob": "",
     "lodash": "",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.3",
     "pg": "",
     "psql_pooler": "github:jmarca/psql_pooler",
     "rstats_couch_utils": "jmarca/rstats_couch_utils",
